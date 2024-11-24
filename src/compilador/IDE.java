@@ -4,6 +4,21 @@
  */
 package compilador;
 
+import AnalizadorLexico.Lexer;
+import AnalizadorLexico.Token;
+import AnalizadorLexico.Errors;
+
+
+
+import java.awt.Color;
+import javax.swing.JTextPane;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import java.util.List;
+
 /**
  *
  * @author otvam
@@ -18,8 +33,92 @@ public class IDE extends javax.swing.JFrame {
     public IDE() {
         initComponents();
         inicializar();
+        colors();
+    }
+    
+        //METODO PARA ENCONTRAR LAS ULTIMAS CADENAS
+    private int findLastNonWordChar(String text, int index) {
+        while (--index >= 0) {
+            //  \\W = [A-Za-Z0-9]
+            if (String.valueOf(text.charAt(index)).matches("\\W")) {
+                break;
+            }
+        }
+        return index;
     }
 
+    //METODO PARA ENCONTRAR LAS PRIMERAS CADENAS 
+    private int findFirstNonWordChar(String text, int index) {
+        while (index < text.length()) {
+            if (String.valueOf(text.charAt(index)).matches("\\W")) {
+                break;
+            }
+            index++;
+        }
+        return index;
+    }
+
+    //METODO PARA PINTAS LAS PALABRAS RESEVADAS
+    private void colors() {
+
+        final StyleContext cont = StyleContext.getDefaultStyleContext();
+
+        //COLORES 
+        final AttributeSet attred = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(255, 0, 35));
+        final AttributeSet attgreen = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 255, 54));
+        final AttributeSet attblue = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 147, 255));
+        final AttributeSet attblack = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 0, 0));
+
+        //STYLO 
+        DefaultStyledDocument doc = new DefaultStyledDocument() {
+            public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
+                super.insertString(offset, str, a);
+
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offset);
+                if (before < 0) {
+                    before = 0;
+                }
+                int after = findFirstNonWordChar(text, offset + str.length());
+                int wordL = before;
+                int wordR = before;
+
+                while (wordR <= after) {
+                    if (wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")) {
+                        if (text.substring(wordL, wordR).matches("(\\W)*(SI|HAZ|ENTONCES|LOOP|A)")) {
+                            setCharacterAttributes(wordL, wordR - wordL, attblue, false);
+                        } else if (text.substring(wordL, wordR).matches("(\\W)*(INT|DEC|CAD)")) {
+                            setCharacterAttributes(wordL, wordR - wordL, attgreen, false);
+                        } else if (text.substring(wordL, wordR).matches("(\\W)*(RET|ETD|SLD)")) {
+                            setCharacterAttributes(wordL, wordR - wordL, attred, false);
+                        } else {
+                            setCharacterAttributes(wordL, wordR - wordL, attblack, false);
+                        }
+                        wordL = wordR;
+
+                    }
+                    wordR++;
+                }
+            }
+
+            public void romeve(int offs, int len) throws BadLocationException {
+                super.remove(offs, len);
+
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offs);
+                if (before < 0) {
+                    before = 0;
+                }
+            }
+        };
+
+        JTextPane txt = new JTextPane(doc);
+        String temp = jtpCode.getText();
+        jtpCode.setStyledDocument(txt.getStyledDocument());
+        jtpCode.setText(temp);
+
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -220,7 +319,33 @@ public class IDE extends javax.swing.JFrame {
     }//GEN-LAST:event_btnTokensActionPerformed
 
     private void btnCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarActionPerformed
-        // TODO add your handling code here:
+            // Obtener el texto del JTextPane
+    String codigo = jtpCode.getText();
+    
+    // Instanciar el Lexer y analizar el código
+    Lexer lexer = new Lexer();
+    List<Token> tokens = lexer.lex(codigo);
+
+    // Construir el resultado del análisis
+    StringBuilder resultado = new StringBuilder();
+    resultado.append("Tokens encontrados:\n");
+    for (Token token : tokens) {
+        resultado.append(token.toString()).append("\n");
+    }
+
+    // Imprimir los errores léxicos si los hay
+    List<Errors> errores = lexer.getErrores();
+    if (!errores.isEmpty()) {
+        resultado.append("\nErrores encontrados:\n");
+        for (Errors error : errores) {
+            resultado.append(error.toString()).append("\n");
+        }
+    } else {
+        resultado.append("\nNo se encontraron errores léxicos.\n");
+    }
+
+    // Mostrar el resultado en el JTextArea
+    jtaCompile.setText(resultado.toString());
     }//GEN-LAST:event_btnCompilarActionPerformed
 
     private void jtpCodeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpCodeKeyReleased
