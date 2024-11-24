@@ -54,9 +54,13 @@ public class Lexer {
                 
                 //token no valido 
                 if (!bandera) {
-                    String msj = "Token no reconocido";
+                    char tnoValido = linea.charAt(0);
+                    String msj = "Token no reconocido" + tnoValido;
                     errores.add(new Errors(linea,msj,numLinea,col));
-                    break; // pasa a siguiente liensa 
+                    
+                    linea = linea.substring(1);
+                    col++;
+
                 }                
             }
             numLinea++;
