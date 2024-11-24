@@ -17,7 +17,7 @@ public enum Tokens {
     SIMBOLO_ESPECIAL("[\\[\\]\\{\\}\\,\\;]"),                // Símbolos especiales (corchetes, llaves, comas y punto y coma)
     COMENTARIO("//.*$");                                     // Comentarios (cualquier cosa después de //)
 
-   
+    
     private final String patron;
 
     Tokens(String patron) {

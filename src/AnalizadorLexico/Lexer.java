@@ -60,7 +60,6 @@ public class Lexer {
                     
                     linea = linea.substring(1);
                     col++;
-
                 }                
             }
             numLinea++;
