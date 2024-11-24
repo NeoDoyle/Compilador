@@ -9,14 +9,14 @@ package AnalizadorLexico;
  * @author hp
  */
 
-public class Tokenizer {
+public class Token {
     //cacateristicas: 
     private final String valor; //variable 1 
     private final Tokens tipo; //identificador
     private final int line;
     private final int column;
 
-    public Tokenizer(String valor, Tokens tipo, int line, int column) {
+    public Token(String valor, Tokens tipo, int line, int column) {
         this.valor = valor;
         this.tipo = tipo;
         this.line = line;

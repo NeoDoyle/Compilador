@@ -10,31 +10,26 @@ package AnalizadorLexico;
  */
 public class Errors {
     //cacateristicas: 
-    private final String valor; //variable 1 
-    private final String tipe;
-    private final Tokens tipo; //identificador
+    private final String valor; // el token probelma
+    private final String mensaje; //error
     private final int line;
     private final int column;
 
-    public Errors(String valor, String tipe, Tokens tipo, int line, int column) {
+    public Errors(String valor, String mensaje, int line, int column) {
         this.valor = valor;
-        this.tipe = tipe;
-        this.tipo = tipo;
+        this.mensaje = mensaje;
         this.line = line;
         this.column = column;
     }
 
-    public String getTipe() {
-        return tipe;
+    public String getMensaje() {
+        return mensaje;
     }
 
     public String getValor() {
         return valor;
     }
 
-    public Tokens getTipo() {
-        return tipo;
-    }
 
     public int getLine() {
         return line;
@@ -46,8 +41,10 @@ public class Errors {
 
     @Override
     public String toString() {
-        return "Tokenizer{" + "valor=" + valor + ", tipo=" + tipo + ", line=" + line + ", column=" + column + '}';
+        return "Errors{" + "valor=" + valor + ", mensaje=" + mensaje + ", line=" + line + ", column=" + column + '}';
     }
+
+    
     
     
     

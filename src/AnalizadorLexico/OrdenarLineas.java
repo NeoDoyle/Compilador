@@ -10,8 +10,8 @@ import java.util.Comparator;
  *
  * @author hp
  */
-public class OrdenarLineas implements Comparator<Tokenizer>{
-    public int compare(Tokenizer o1, Tokenizer o2){
+public class OrdenarLineas implements Comparator<Token>{
+    public int compare(Token o1, Token o2){
         if (o1.getLine()<o2.getLine()) {
             return -1;
         }else if(o1.getLine()<o2.getLine()){
