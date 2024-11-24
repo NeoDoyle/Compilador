@@ -44,6 +44,18 @@ private JTable tokensTable;
         JScrollPane scrollPane = new JScrollPane(tokensTable);
         add(scrollPane, BorderLayout.CENTER);
     }
+    
+    public void updateTokens(List<Token> tokens) {
+    DefaultTableModel tableModel = (DefaultTableModel) tokensTable.getModel();
+    tableModel.setRowCount(0); // Limpiar las filas actuales
+
+    for (Token token : tokens) {
+        String tipo = token.getTipo().name();
+        String lexema = token.getValor();
+        String posicion = "[" + token.getLine() + ", " + token.getColumn() + "]";
+        tableModel.addRow(new Object[]{tipo, lexema, posicion});
+    }
+}
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

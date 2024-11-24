@@ -18,6 +18,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -27,6 +28,7 @@ public class IDE extends javax.swing.JFrame {
     
     NumeroLinea numerolinea;
     Directorio dir;
+    TokensTableFrame tokensFrame; // Ventana de la tabla de tokens
     /**
      * Creates new form IDE
      */
@@ -315,23 +317,28 @@ public class IDE extends javax.swing.JFrame {
     }//GEN-LAST:event_btnIdentifiersActionPerformed
 
     private void btnTokensActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTokensActionPerformed
-        // TODO add your handling code here:
+            if (tokensFrame != null) {
+        if (tokensFrame.isVisible()) {
+            tokensFrame.setVisible(false); // Cerrar la ventana si está abierta
+        } else {
+            tokensFrame.setVisible(true); // Abrir la ventana si está cerrada
+        }
+    } else {
+        JOptionPane.showMessageDialog(this, "Debe compilar el código para generar la tabla de tokens.", 
+                                      "Información", JOptionPane.INFORMATION_MESSAGE);
+    }
     }//GEN-LAST:event_btnTokensActionPerformed
 
     private void btnCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarActionPerformed
-            // Obtener el texto del JTextPane
+    // Obtener el texto del JTextPane
     String codigo = jtpCode.getText();
-    
+
     // Instanciar el Lexer y analizar el código
     Lexer lexer = new Lexer();
     List<Token> tokens = lexer.lex(codigo);
 
     // Construir el resultado del análisis
     StringBuilder resultado = new StringBuilder();
-    resultado.append("Tokens encontrados:\n");
-    for (Token token : tokens) {
-        resultado.append(token.toString()).append("\n");
-    }
 
     // Imprimir los errores léxicos si los hay
     List<Errors> errores = lexer.getErrores();
@@ -346,6 +353,13 @@ public class IDE extends javax.swing.JFrame {
 
     // Mostrar el resultado en el JTextArea
     jtaCompile.setText(resultado.toString());
+
+    // Actualizar la tabla de tokens
+    if (tokensFrame == null) {
+        tokensFrame = new TokensTableFrame(tokens); // Crear la ventana si no existe
+    } else {
+        tokensFrame.updateTokens(tokens); // Actualizar la tabla si ya existe
+    }
     }//GEN-LAST:event_btnCompilarActionPerformed
 
     private void jtpCodeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpCodeKeyReleased
