@@ -68,7 +68,6 @@ public class Lexer {
         return tokens;
         
     }//entrada
-
     
     //getters 
     public List<Errors> getErrores() {

@@ -44,10 +44,4 @@ public class Token {
         return "Tokenizer{" + "valor=" + valor + ", tipo=" + tipo + ", line=" + line + ", column=" + column + '}';
     }
     
-    
-    
-
-  
-    
-    
 }

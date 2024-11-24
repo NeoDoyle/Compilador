@@ -30,6 +30,7 @@ public class Errors {
         return valor;
     }
 
+    
 
     public int getLine() {
         return line;
@@ -43,12 +44,5 @@ public class Errors {
     public String toString() {
         return "Errors{" + "valor=" + valor + ", mensaje=" + mensaje + ", line=" + line + ", column=" + column + '}';
     }
-
-    
-    
-    
-    
-
-  
-    
+   
 }

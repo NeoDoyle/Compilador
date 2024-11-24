@@ -26,6 +26,7 @@ public class Pruebas {
                             MINIMIZAR; // Objetivo del problema
                             SOLVE; // Indica que el problema se debe resolver
                         }
+                        
                         """;
 
         // Crear una instancia del lexer y analizar el código de entrada
