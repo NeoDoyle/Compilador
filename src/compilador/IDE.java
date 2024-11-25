@@ -18,6 +18,8 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
 /**
@@ -60,69 +62,77 @@ public class IDE extends javax.swing.JFrame {
         return index;
     }
 
-    //METODO PARA PINTAS LAS PALABRAS RESEVADAS
-    private void colors() {
+    //MÉTODO PARA PINTAR LAS PALABRAS RESERVADAS
+private void colors() {
+    final StyleContext cont = StyleContext.getDefaultStyleContext();
 
-        final StyleContext cont = StyleContext.getDefaultStyleContext();
+    // COLORES 
+    final AttributeSet attred = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(255, 0, 35));
+    final AttributeSet attgreen = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(8, 161, 115));
+    final AttributeSet attblue = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 147, 255));
+    final AttributeSet attpurple = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(102, 0, 102));
+    final AttributeSet attblack = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 0, 0));
 
-        //COLORES 
-        final AttributeSet attred = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(255, 0, 35));
-        final AttributeSet attgreen = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 255, 54));
-        final AttributeSet attblue = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 147, 255));
-        final AttributeSet attpurple = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(102, 0, 102));
-        final AttributeSet attblack = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 0, 0));
+    // Documento estilizado
+    DefaultStyledDocument doc = new DefaultStyledDocument() {
+        @Override
+        public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
+            super.insertString(offset, str, a);
+            updateStyles();
+        }
 
-        //STYLO 
-        DefaultStyledDocument doc = new DefaultStyledDocument() {
-            public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
-                super.insertString(offset, str, a);
+        @Override
+        public void remove(int offs, int len) throws BadLocationException {
+            super.remove(offs, len);
+            updateStyles();
+        }
 
-                String text = getText(0, getLength());
-                int before = findLastNonWordChar(text, offset);
-                if (before < 0) {
-                    before = 0;
-                }
-                int after = findFirstNonWordChar(text, offset + str.length());
-                int wordL = before;
-                int wordR = before;
+        private void updateStyles() throws BadLocationException {
+            String text = getText(0, getLength());
 
-                while (wordR <= after) {
-                    if (wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")) {
-                        if (text.substring(wordL, wordR).matches("(\\W)*(SI|HAZ|ENTONCES|LOOP|A)")) {
-                            setCharacterAttributes(wordL, wordR - wordL, attblue, false);
-                        } else if (text.substring(wordL, wordR).matches("(\\W)*(INT|DEC|CAD)")) {
-                            setCharacterAttributes(wordL, wordR - wordL, attgreen, false);
-                        } else if (text.substring(wordL, wordR).matches("(\\W)*(RET|ETD|SLD)")) {
-                            setCharacterAttributes(wordL, wordR - wordL, attred, false);
-                        } else if (text.substring(wordL, wordR).matches("(\\W)*(ASIGNACION|RECURSOS|TAREAS|COSTOS|RESOLVER|MINIMIZAR|MAXIMIZAR|SOLVE)")) {
-                            setCharacterAttributes(wordL, wordR - wordL, attpurple, false);    
-                        } else {
-                            setCharacterAttributes(wordL, wordR - wordL, attblack, false);
-                        }
-                        wordL = wordR;
+            // Resetear estilos
+            setCharacterAttributes(0, text.length(), attblack, true);
 
+            // Buscar y pintar comentarios
+            Pattern commentPattern = Pattern.compile("//.*");
+            Matcher commentMatcher = commentPattern.matcher(text);
+            while (commentMatcher.find()) {
+                setCharacterAttributes(commentMatcher.start(), commentMatcher.end() - commentMatcher.start(), attgreen, false);
+            }
+
+            // Pintar palabras reservadas
+            int before = 0;
+            int after = text.length();
+            int wordL = before;
+            int wordR = before;
+
+            while (wordR <= after) {
+                if (wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")) {
+                    String word = text.substring(wordL, wordR);
+                    if (word.matches("(\\W)*(SI|HAZ|ENTONCES|LOOP|A)")) {
+                        setCharacterAttributes(wordL, wordR - wordL, attblue, false);
+                    } else if (word.matches("(\\W)*(INT|DEC|CAD)")) {
+                        setCharacterAttributes(wordL, wordR - wordL, attgreen, false);
+                    } else if (word.matches("(\\W)*(RET|ETD|SLD)")) {
+                        setCharacterAttributes(wordL, wordR - wordL, attred, false);
+                    } else if (word.matches("(\\W)*(ASIGNACION|RECURSOS|TAREAS|COSTOS|RESOLVER|MINIMIZAR|MAXIMIZAR|SOLVE)")) {
+                        setCharacterAttributes(wordL, wordR - wordL, attpurple, false);
                     }
-                    wordR++;
+                    wordL = wordR;
                 }
+                wordR++;
             }
+        }
+    };
 
-            public void romeve(int offs, int len) throws BadLocationException {
-                super.remove(offs, len);
+    // Configuración del JTextPane
+    JTextPane txt = new JTextPane(doc);
+    String temp = jtpCode.getText();
+    jtpCode.setStyledDocument(txt.getStyledDocument());
+    jtpCode.setText(temp);
+}
 
-                String text = getText(0, getLength());
-                int before = findLastNonWordChar(text, offs);
-                if (before < 0) {
-                    before = 0;
-                }
-            }
-        };
 
-        JTextPane txt = new JTextPane(doc);
-        String temp = jtpCode.getText();
-        jtpCode.setStyledDocument(txt.getStyledDocument());
-        jtpCode.setText(temp);
-
-    }
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -145,10 +155,10 @@ public class IDE extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         jtpCode = new javax.swing.JTextPane();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -258,13 +268,13 @@ public class IDE extends javax.swing.JFrame {
         jLabel1.setForeground(new java.awt.Color(0, 204, 204));
         jLabel1.setText("Pathos");
 
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/Icon/Pathos_logo.png"))); // NOI18N
-
         jLabel3.setFont(new java.awt.Font("Courier New", 1, 48)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 102, 51));
         jLabel3.setText("Equipo Caimanes");
 
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/Icon/Equipo_logo3.png"))); // NOI18N
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/Icon/Equipo_logo4.png"))); // NOI18N
+
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/Icon/Pathos_logo2.png"))); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -273,79 +283,74 @@ public class IDE extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(43, Short.MAX_VALUE)
+                        .addGap(29, 29, 29)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(layout.createSequentialGroup()
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 994, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(btnNuevo)
                                 .addGap(18, 18, 18)
                                 .addComponent(btnGuardar)
                                 .addGap(44, 44, 44)
                                 .addComponent(btnAbrir)
                                 .addGap(44, 44, 44)
-                                .addComponent(btnReservadas))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel1)))
-                        .addGap(48, 48, 48)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnIdentifiers)
+                                .addComponent(btnReservadas)
                                 .addGap(48, 48, 48)
+                                .addComponent(btnIdentifiers)
+                                .addGap(46, 46, 46)
                                 .addComponent(btnTokens)
                                 .addGap(47, 47, 47)
                                 .addComponent(btnCompilar))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addGap(0, 0, 0)
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(181, 181, 181)
-                                .addComponent(jLabel5))))
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(216, 216, 216)
+                        .addComponent(jLabel5))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1102, Short.MAX_VALUE)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING))))
+                        .addGap(15, 15, 15)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel1)
+                        .addGap(37, 37, 37)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel3))
-                                .addGap(56, 56, 56))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addGap(92, 92, 92))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(85, 85, 85)
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(32, 32, 32)
-                                .addComponent(jLabel2)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnCompilar)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(btnNuevo)
-                        .addComponent(btnGuardar)
-                        .addComponent(btnAbrir)
-                        .addComponent(btnReservadas)
-                        .addComponent(btnIdentifiers)
-                        .addComponent(btnTokens)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 64, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 421, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(54, 54, 54)
+                                .addGap(26, 26, 26)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnNuevo)
+                            .addComponent(btnGuardar)
+                            .addComponent(btnAbrir)
+                            .addComponent(btnReservadas)
+                            .addComponent(btnIdentifiers)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(btnCompilar)
+                                .addComponent(btnTokens)))
+                        .addGap(42, 42, 42)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(72, 72, 72)
+                        .addComponent(jLabel5))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(34, 34, 34)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(43, 43, 43))
+                .addGap(37, 37, 37))
         );
 
         pack();
