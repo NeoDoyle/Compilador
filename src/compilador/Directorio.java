@@ -20,7 +20,7 @@ public class Directorio {
         String text = "";
         try {
             
-            BufferedReader entrada = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+            BufferedReader entrada = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             while(true){
             int b = entrada.read();
                 if(b!=-1)
