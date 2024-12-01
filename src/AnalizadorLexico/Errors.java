@@ -42,7 +42,7 @@ public class Errors {
 
     @Override
     public String toString() {
-        return "Errors{" + "valor=" + valor + ", mensaje=" + mensaje + ", line=" + line + ", column=" + column + '}';
+        return "Errors{" + "valor= " + valor + ", mensaje=" + mensaje + ", line=" + line + ", column=" + column + '}';
     }
    
 }

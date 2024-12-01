@@ -7,10 +7,12 @@ package compilador;
 import AnalizadorLexico.Lexer;
 import AnalizadorLexico.Token;
 import AnalizadorLexico.Errors;
+import AnalizadorSintactico.Parser;
 
 
 
 import java.awt.Color;
+import java.util.ArrayList;
 import javax.swing.JTextPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -301,7 +303,7 @@ private void colors() {
                                 .addGap(47, 47, 47)
                                 .addComponent(btnCompilar))
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addGap(216, 216, 216)
+                        .addGap(112, 112, 112)
                         .addComponent(jLabel5))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(15, 15, 15)
@@ -392,7 +394,7 @@ private void colors() {
     }//GEN-LAST:event_btnTokensActionPerformed
 
     private void btnCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCompilarActionPerformed
-    // Obtener el texto del JTextPane
+            // Obtener el texto del JTextPane
     String codigo = jtpCode.getText();
 
     // Instanciar el Lexer y analizar el código
@@ -403,14 +405,28 @@ private void colors() {
     StringBuilder resultado = new StringBuilder();
 
     // Imprimir los errores léxicos si los hay
-    List<Errors> errores = lexer.getErrores();
-    if (!errores.isEmpty()) {
-        resultado.append("\nErrores encontrados:\n");
-        for (Errors error : errores) {
+    List<Errors> erroresLexicos = lexer.getErrores();
+    if (!erroresLexicos.isEmpty()) {
+        resultado.append("\nErrores léxicos encontrados:\n");
+        for (Errors error : erroresLexicos) {
             resultado.append(error.toString()).append("\n");
         }
     } else {
         resultado.append("\nNo se encontraron errores léxicos.\n");
+
+        // Ejecutar el Parser si no hay errores léxicos
+        List<Errors> erroresSintacticos = new ArrayList<>();
+        Parser parser = new Parser(tokens, erroresSintacticos);
+        parser.parse();
+
+        if (!erroresSintacticos.isEmpty()) {
+            resultado.append("\nErrores sintácticos encontrados:\n");
+            for (Errors error : erroresSintacticos) {
+                resultado.append(error.toString()).append("\n");
+            }
+        } else {
+            resultado.append("\nEl análisis sintáctico fue exitoso. No se encontraron errores.\n");
+        }
     }
 
     // Mostrar el resultado en el JTextArea

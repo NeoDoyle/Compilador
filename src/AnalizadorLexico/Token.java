@@ -41,7 +41,7 @@ public class Token {
 
     @Override
     public String toString() {
-        return "Tokenizer{" + "valor=" + valor + ", tipo=" + tipo + ", line=" + line + ", column=" + column + '}';
+        return "Tokenizer{" + "valor= " + valor + ", tipo=" + tipo + ", line=" + line + ", column=" + column + '}';
     }
     
 }
