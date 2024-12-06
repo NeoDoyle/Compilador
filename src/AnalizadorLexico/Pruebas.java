@@ -16,7 +16,7 @@ public class Pruebas {
         // Código de ejemplo para ser analizado
         String codigo = """
             ASIGNACION { 
-                            RECURSOS = [Trabajador1, Trabajador2, Trabajador3];
+                            7RECURSOS = [Trabajador1, Trabajador2, Trabajador3];
                             TAREAS = [TareaA, TareaB, TareaC];
                             COSTOS = [
                                 [4, 8, 6], // Costos para Trabajador1

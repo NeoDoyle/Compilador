@@ -16,29 +16,29 @@ public class Lexer {
         List<Token> tokens = new ArrayList<>();
         String[] lineas = entrada.split("\n");
 
-        int numLinea = 1; // Contador de líneas
+        int numLinea = 1; //contador de líneas
         for (String linea : lineas) {
             int col = 0;
 
-            // Ignora los comentarios
+            //ignora los comentarios
             linea = linea.replaceAll("//.*$", "");
             // Remueve espacios extras al inicio
             linea = linea.stripLeading();
 
-            // Mientras la línea no esté vacía
+            // mientras la línea no este vacia
             while (!linea.isEmpty()) {
                 boolean bandera = false;
 
-                // Validación previa para patrones no válidos (número seguido de letras, como "2RECURSOS")
-                Pattern patronInvalido = Pattern.compile("^\\d+[a-zA-Z_]");
+               // validacion previa para patrones no validos nume seguido de letras corrgir  7RECURSOS
+                Pattern patronInvalido = Pattern.compile("^\\d+[a-zA-Z_]+");
                 Matcher matcherInvalido = patronInvalido.matcher(linea);
 
                 if (matcherInvalido.find()) {
-                    String tokenNoValido = matcherInvalido.group(); // Captura el token problemático
+                    String tokenNoValido = matcherInvalido.group(); // captura todo el token problematico
                     String msj = "Token no reconocido: Identificador no válido, comienza con un número: " + tokenNoValido;
-                    errores.add(new Errors(linea, msj, numLinea, col));
+                    errores.add(new Errors(tokenNoValido, msj, numLinea, col));
 
-                    // Elimina el token inválido
+                    // avanza la longitud completa del token no valido
                     int longitudInvalida = tokenNoValido.length();
                     linea = linea.substring(longitudInvalida).stripLeading();
                     col += longitudInvalida;
@@ -46,29 +46,29 @@ public class Lexer {
                     continue;
                 }
 
-                // Procesar tokens válidos
+                // Procesar tokens validos
                 for (Tokens tipo : Tokens.values()) {
                     Pattern patron = Pattern.compile("^" + tipo.getPatron());
                     Matcher coincidencia = patron.matcher(linea);
 
                     if (coincidencia.find()) {
-                        String valor = coincidencia.group(); // Almacena el token encontrado
+                        String valor = coincidencia.group(); //almacena el token encontrado
                         Token token = new Token(valor, tipo, numLinea, col);
                         tokens.add(token);
 
-                        // Avanza en la línea
+                        // avanza en la line
                         linea = linea.substring(coincidencia.end()).stripLeading();
                         col += coincidencia.end(); // Actualiza la columna
                         bandera = true;
-                        break; // Sale del bucle después de encontrar un token válido
+                        break; // sale del bucle despues de encontrar un token valido
                     }
                 }
 
-                // Si no se encontró ningún token válido
+                // Si no se encontro ningún token valido
                 if (!bandera) {
                     char tnoValido = linea.charAt(0);
                     String msj = "Token no reconocido: " + tnoValido;
-                    errores.add(new Errors(linea, msj, numLinea, col));
+                    errores.add(new Errors(String.valueOf(tnoValido), msj, numLinea, col));
 
                     // Avanza un carácter
                     linea = linea.substring(1);

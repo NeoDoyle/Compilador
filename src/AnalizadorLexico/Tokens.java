@@ -10,13 +10,16 @@ package AnalizadorLexico;
  */
 public enum Tokens {
     // Palabras clave específicas
-    KEYWORD_IF("if"),
-    KEYWORD_WHILE("while"),
+    //KEYWORD_IF(""),
+    //KEYWORD_WHILE("while"),
+    PALABRA_CLAVE("ASIGNACION|RECURSOS|TAREAS|COSTOS|MINIMIZAR|MAXIMIZAR"),
 
     // Identificadores y valores
     IDENTIFICADOR("[a-zA-Z_][a-zA-Z0-9_]*"), // Identificadores
     DECIMAL("\\d+\\.\\d+"),                  // Números decimales
     NUMERO("\\d+"),                          // Números enteros
+    COMMA(","),                              // Coma
+
 
     // Operadores
     COMPARACION(">=|<=|==|!="),              // Operadores relacionales largos
@@ -26,10 +29,13 @@ public enum Tokens {
 
     // Símbolos especiales
     SEMICOLON(";"),                          // Punto y coma
+    OPEN_BRACE("\\{"),  // {                 // llave de apertura
+    CLOSE_BRACE("\\}"), // }                 // llave de cierre
+    OPEN_BRACKET("\\["), // [                // corchete de apertura
+    CLOSE_BRACKET("\\]"), // ]               // corchete de cierre
     OPEN_PAREN("\\("),                       // Paréntesis de apertura
     CLOSE_PAREN("\\)"),                      // Paréntesis de cierre
-    OPEN_BRACE("\\{"),                       // Llave de apertura
-    CLOSE_BRACE("\\}"),                      // Llave de cierre
+   
 
     // Comentarios
     COMENTARIO("//.*$");
@@ -45,5 +51,3 @@ public enum Tokens {
     }
 }
 
-
-//PALABRA_CLAVE("ASIGNACION|RECURSOS|TAREAS|COSTOS|RESOLVER|MINIMIZAR|MAXIMIZAR|SOLVE"), 

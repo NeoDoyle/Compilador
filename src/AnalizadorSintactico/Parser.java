@@ -1,23 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package AnalizadorSintactico;
-
 
 import AnalizadorLexico.Token;
 import AnalizadorLexico.Tokens;
 import AnalizadorLexico.Errors;
 import java.util.List;
 
-/**
- *
- * @author otvam
- */
 public class Parser {
+
     private final List<Token> tokens;
     private final List<Errors> errores;
     private int currentTokenIndex;
+
+    private int numRecursos = 0;
+    private int numTareas = 0;
 
     // Constructor
     public Parser(List<Token> tokens, List<Errors> errores) {
@@ -26,123 +21,164 @@ public class Parser {
         this.currentTokenIndex = 0;
     }
 
-    // Método principal para iniciar el análisis
+    // metodo principal para iniciar el analisis
     public void parse() {
         while (!isAtEnd()) {
             try {
-                parseStatement(); // Analiza una declaración
-            } catch (Exception e) {
+                parseStatement(); // analiza una declaracin principal
+            } catch (RuntimeException e) {
                 errores.add(new Errors(
                         getCurrentToken().getValor(),
                         e.getMessage(),
                         getCurrentToken().getLine(),
                         getCurrentToken().getColumn()
                 ));
-                advance(); // Continúa con el siguiente token para evitar un bucle infinito
+                sincronizar(); // intenta continuar despues del error
             }
         }
     }
 
-    // Ejemplo: Análisis de una declaración
+    // analiza una declaración principal
     private void parseStatement() {
-    if (match(Tokens.KEYWORD_IF)) {
-        parseIfStatement();
-    } else if (match(Tokens.KEYWORD_WHILE)) {
-        parseWhileStatement();
-    } else if (check(Tokens.IDENTIFICADOR)) {
-        parseAssignment();
-    } else {
-        throw new RuntimeException("Se esperaba una declaración válida.");
-    }
-
-    // Asegúrate de avanzar al menos un token para evitar bucles infinitos
-    if (!isAtEnd()) {
-        advance();
-    }
-}
-
-
-
-
-    // Método para analizar una declaración `if`
-    private void parseIfStatement() {
-    consume(Tokens.KEYWORD_IF, "Se esperaba 'if'.");
-    consume(Tokens.OPEN_PAREN, "Se esperaba '(' después de 'if'.");
-    if (isAtEnd()) throw new RuntimeException("Faltan tokens para la condición del 'if'.");
-
-    parseExpression(); // Procesa la condición
-    consume(Tokens.CLOSE_PAREN, "Se esperaba ')' después de la condición.");
-
-    if (!check(Tokens.OPEN_BRACE)) throw new RuntimeException("Se esperaba '{' para abrir el bloque del 'if'.");
-    parseBlock();
-}
-
-
-
-    // Método para analizar una declaración `while`
-    private void parseWhileStatement() {
-    consume(Tokens.KEYWORD_WHILE, "Se esperaba 'while'.");
-    consume(Tokens.OPEN_PAREN, "Se esperaba '(' después de 'while'.");
-    parseExpression(); // Analiza la condición dentro de los paréntesis
-    consume(Tokens.CLOSE_PAREN, "Se esperaba ')' después de la condición.");
-    parseBlock(); // Analiza el bloque asociado al 'while'
-}
-
-    // Método para analizar una asignación
-private void parseAssignment() {
-    Token currentToken = getCurrentToken();
-
-    if (currentToken.getTipo() == Tokens.IDENTIFICADOR
-        && tokens.get(currentTokenIndex + 1).getTipo() == Tokens.ASIGNACION
-        && tokens.get(currentTokenIndex + 2).getTipo() == Tokens.NUMERO
-        && tokens.get(currentTokenIndex + 3).getTipo() == Tokens.SEMICOLON) {
-        // Regla satisfecha
-        currentTokenIndex += 4; // Avanzar al siguiente token
-    } else {
-        if (!isAtEnd()) {
-    errores.add(new Errors(
-        getCurrentToken().getValor(),
-        "Mensaje de error",
-        getCurrentToken().getLine(),
-        getCurrentToken().getColumn()
-    ));
-}
-    }
-}
-
-    // Método para analizar una expresión (simplificado)
-    private void parseExpression() {
-    if (match(Tokens.IDENTIFICADOR)) {
-        if (match(Tokens.ASIGNACION)) {
-            parseExpression(); // Procesa la asignación
+        if (check(Tokens.PALABRA_CLAVE)) {
+            String value = getCurrentToken().getValor();
+            switch (value) {
+                case "ASIGNACION" -> parseAsignacion();               
+                default -> throw new RuntimeException("Palabra clave no reconocida: " + value);
+            }
+        } else {
+            throw new RuntimeException("Se esperaba una palabra clave (ASIGNACION)");
         }
-    } else if (match(Tokens.NUMERO)) {
-        advance(); // Consume un número
-    } else {
-        throw new RuntimeException("Expresión no válida.");
-    }
-}
-
-
-    // Método para analizar un bloque de código (delimitado por llaves)
-    private void parseBlock() {
-    if (isAtEnd()) {
-        throw new RuntimeException("Faltan tokens antes del bloque.");
     }
 
-    consume(Tokens.OPEN_BRACE, "Se esperaba '{' para abrir el bloque de código.");
-    while (!check(Tokens.CLOSE_BRACE) && !isAtEnd()) {
-        parseStatement(); // Procesa declaraciones dentro del bloque
-    }
-    consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar el bloque de código.");
-}
+    // Analiza una declaracion de asignacion
+    private void parseAsignacion() {
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'ASIGNACION'");
+        consume(Tokens.OPEN_BRACE, "Se esperaba '{' despues de 'ASIGNACION'");
 
-    // Utilidades para manejo de tokens
+        while (!check(Tokens.CLOSE_BRACE)) {
+            if (check(Tokens.PALABRA_CLAVE)) {
+                String value = getCurrentToken().getValor();
+                switch (value) {
+                    case "RECURSOS" -> parseRecursos();
+                    case "TAREAS" -> parseTareas();
+                    case "COSTOS" -> parseCostos();
+                    case "MINIMIZAR", "MAXIMIZAR" -> parseObjetivo();
+                    default -> throw new RuntimeException("Palabra clave no reconocida dentro de 'ASIGNACION': " + value);
+                }
+            } else {
+                throw new RuntimeException("Se esperaba una palabra clave dentro de 'ASIGNACION'");
+            }
+        }
+
+        consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'ASIGNACION'");
+    }
+
+    // analiza la lista de recursos
+    private void parseRecursos() {
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'RECURSOS'");
+        consume(Tokens.ASIGNACION, "Se esperaba '=' despues de 'RECURSOS'");
+        numRecursos = parseListaIdentificadores();
+        consume(Tokens.SEMICOLON, "Se esperaba ';' despues de 'RECURSOS'");
+    }
+
+    // analiza la lista de tareas
+    private void parseTareas() {
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'TAREAS'");
+        consume(Tokens.ASIGNACION, "Se esperaba '=' despues de 'TAREAS'");
+        numTareas = parseListaIdentificadores();
+        consume(Tokens.SEMICOLON, "Se esperaba ';' despues de 'TAREAS'");
+    }
+
+    // analiza las matrices de costos
+    private void parseCostos() {
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'COSTOS'");
+        consume(Tokens.ASIGNACION, "Se esperaba '=' despues de 'COSTOS'");
+        int numMatrices = parseListaMatrices();
+        consume(Tokens.SEMICOLON, "Se esperaba ';' despues de 'COSTOS'");
+
+        // verificar que la matriz de costos sea cuadrada y consistente con recursos y tareas
+        if (numMatrices != numRecursos) {
+            throw new RuntimeException("El numero de filas en la matriz de costos debe ser igual al numero de recursos");
+        }
+    }
+
+    // analiza la lista de identificadores y devuelve el conteo
+    private int parseListaIdentificadores() {
+        consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de identificadores");
+        int count = 0;
+        do {
+            consume(Tokens.IDENTIFICADOR, "Se esperaba un identificador");
+            count++;
+        } while (match(Tokens.COMMA));
+        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de identificadores");
+        return count;
+    }
+
+    // analiza una lista de matrices y devuelve el conteo de filas
+    private int parseListaMatrices() {
+        consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar las matrices");
+        int count = 0;
+        do {
+            parseMatriz();
+            count++;
+        } while (match(Tokens.COMMA));
+        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar las matrices");
+        return count;
+    }
+
+    // analiza una matriz
+    private void parseMatriz() {
+        consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar una matriz");
+        int columnCount = 0;
+        do {
+            if (check(Tokens.NUMERO) || check(Tokens.DECIMAL)) {
+                advance();
+                columnCount++;
+            } else {
+                throw new RuntimeException("Se esperaba un numero dentro de la matriz");
+            }
+        } while (match(Tokens.COMMA));
+        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la matriz");
+
+        // verificar que el número de columnas sea igual al número de tareas
+        if (columnCount != numTareas) {
+            throw new RuntimeException("El numero de columnas en cada matriz de costos debe ser igual al numero de tareas");
+        }
+    }
+
+    // analiza el objetivo MINIMIZAR o MAXIMIZAR
+    private void parseObjetivo() {
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'MINIMIZAR' o 'MAXIMIZAR'");
+        consume(Tokens.SEMICOLON, "Se esperaba ';' despued del objetivo");
+    }
+
+    
+
+    // Manejo de errores y sincronización
+    private void sincronizar() {
+        advance(); // Avanza al siguiente token
+        while (!isAtEnd()) {
+            if (getPreviousToken().getTipo() == Tokens.SEMICOLON) {
+                return;
+            }
+
+            switch (getCurrentToken().getTipo()) {
+                case PALABRA_CLAVE, IDENTIFICADOR -> {
+                    return;
+                }
+            }
+            advance();
+        }
+    }
+
+    //metodos de ayuda
     private Token advance() {
-    if (!isAtEnd()) currentTokenIndex++;
-    System.out.println("Avanzando al token: " + currentTokenIndex + " de " + tokens.size());
-    return getPreviousToken();
-}
+        if (!isAtEnd()) {
+            currentTokenIndex++;
+        }
+        return getPreviousToken();
+    }
 
     private boolean match(Tokens expected) {
         if (check(expected)) {
@@ -153,7 +189,9 @@ private void parseAssignment() {
     }
 
     private boolean check(Tokens expected) {
-        if (isAtEnd()) return false;
+        if (isAtEnd()) {
+            return false;
+        }
         return getCurrentToken().getTipo() == expected;
     }
 
@@ -169,21 +207,9 @@ private void parseAssignment() {
         return currentTokenIndex >= tokens.size();
     }
 
-    private void parseTerm() {
-    if (match(Tokens.NUMERO) || match(Tokens.IDENTIFICADOR)) {
-        advance(); // Consume un número o identificador
-    } else {
-        throw new RuntimeException("Se esperaba un número o un identificador.");
-    }
-}
-    
     private Token getCurrentToken() {
-    if (isAtEnd()) {
-        System.err.println("Índice fuera de límites: " + currentTokenIndex + ", tamaño: " + tokens.size());
-        throw new RuntimeException("Se intentó acceder a un token fuera del rango permitido.");
+        return tokens.get(currentTokenIndex);
     }
-    return tokens.get(currentTokenIndex);
-}
 
     private Token getPreviousToken() {
         return tokens.get(currentTokenIndex - 1);
