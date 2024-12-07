@@ -68,6 +68,7 @@ public class PuebaSintaxis {
             System.out.println("\nAnalisis sintactico completado sin errores.");
         }
     }
+    
 }
    
 

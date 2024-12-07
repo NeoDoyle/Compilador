@@ -36,7 +36,6 @@ public enum Tokens {
     OPEN_PAREN("\\("),                       // Paréntesis de apertura
     CLOSE_PAREN("\\)"),                      // Paréntesis de cierre
    
-
     // Comentarios
     COMENTARIO("//.*$");
 

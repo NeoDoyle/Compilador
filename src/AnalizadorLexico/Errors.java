@@ -39,7 +39,6 @@ public class Errors {
     public int getColumn() {
         return column;
     }
-
     @Override
     public String toString() {
         return "Errors: " + "valor -> " + valor + ", Mensaje:" + mensaje + " (line-> " + line + " column->" + column+')' ;
