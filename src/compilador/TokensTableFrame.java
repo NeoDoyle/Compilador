@@ -6,7 +6,7 @@ package compilador;
 
 import AnalizadorLexico.Lexer;
 import AnalizadorLexico.Token;
-import AnalizadorLexico.Errors;
+import AnalizadorLexico.Errores;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

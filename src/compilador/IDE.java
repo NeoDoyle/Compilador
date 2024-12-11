@@ -6,7 +6,7 @@ package compilador;
 
 import AnalizadorLexico.Lexer;
 import AnalizadorLexico.Token;
-import AnalizadorLexico.Errors;
+import AnalizadorLexico.Errores;
 import AnalizadorSintactico.Parser;
 
 
@@ -117,7 +117,7 @@ private void colors() {
                         setCharacterAttributes(wordL, wordR - wordL, attgreen, false);
                     } else if (word.matches("(\\W)*(RET|ETD|SLD)")) {
                         setCharacterAttributes(wordL, wordR - wordL, attred, false);
-                    } else if (word.matches("(\\W)*(ASIGNACION|RECURSOS|TAREAS|COSTOS|RESOLVER|MINIMIZAR|MAXIMIZAR|SOLVE)")) {
+                    } else if (word.matches("(\\W)*(HUNGARO|VOGEL|ESQNOROESTE|CRUCEARROYO|RECURSOS|TAREAS|COSTOS|RESOLVER|MINIMIZAR|MAXIMIZAR|SOLVE)")) {
                         setCharacterAttributes(wordL, wordR - wordL, attpurple, false);
                     }
                     wordL = wordR;
@@ -405,23 +405,23 @@ private void colors() {
     StringBuilder resultado = new StringBuilder();
 
     // Imprimir los errores léxicos si los hay
-    List<Errors> erroresLexicos = lexer.getErrores();
+    List<Errores> erroresLexicos = lexer.getErrores();
     if (!erroresLexicos.isEmpty()) {
         resultado.append("\nErrores léxicos encontrados:\n");
-        for (Errors error : erroresLexicos) {
+        for (Errores error : erroresLexicos) {
             resultado.append(error.toString()).append("\n");
         }
     } else {
         resultado.append("\nNo se encontraron errores léxicos.\n");
 
         // Ejecutar el Parser si no hay errores léxicos
-        List<Errors> erroresSintacticos = new ArrayList<>();
+        List<Errores> erroresSintacticos = new ArrayList<>();
         Parser parser = new Parser(tokens, erroresSintacticos);
         parser.parse();
 
         if (!erroresSintacticos.isEmpty()) {
             resultado.append("\nErrores sintácticos encontrados:\n");
-            for (Errors error : erroresSintacticos) {
+            for (Errores error : erroresSintacticos) {
                 resultado.append(error.toString()).append("\n");
             }
         } else {

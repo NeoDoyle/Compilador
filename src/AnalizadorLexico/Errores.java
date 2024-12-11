@@ -8,14 +8,14 @@ package AnalizadorLexico;
  *
  * @author hp
  */
-public class Errors {
+public class Errores {
     //cacateristicas: 
     private final String valor; // el token probelma
     private final String mensaje; //error
     private final int line;
     private final int column;
 
-    public Errors(String valor, String mensaje, int line, int column) {
+    public Errores(String valor, String mensaje, int line, int column) {
         this.valor = valor;
         this.mensaje = mensaje;
         this.line = line;

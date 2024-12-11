@@ -42,8 +42,8 @@ public class Pruebas {
 
         // Imprimir los errores léxicos encontrados
         System.out.println("\nErrores encontrados:");
-        List<Errors> errores = lexer.getErrores();
-        for (Errors error : errores) {
+        List<Errores> errores = lexer.getErrores();
+        for (Errores error : errores) {
             System.out.println(error);
         }
     }

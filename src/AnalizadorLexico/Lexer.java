@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * @author hp
  */
 public class Lexer {
-    private final List<Errors> errores = new ArrayList<>();
+    private final List<Errores> errores = new ArrayList<>();
 
     public List<Token> lex(String entrada) {
         List<Token> tokens = new ArrayList<>();
@@ -37,7 +37,7 @@ public class Lexer {
                 if (matcherInvalido.find()) {
                     String tokenNoValido = matcherInvalido.group(); // captura todo el token problematico
                     String msj = "Token no reconocido: Identificador no válido, comienza con un número: " + tokenNoValido;
-                    errores.add(new Errors(tokenNoValido, msj, numLinea, col));
+                    errores.add(new Errores(tokenNoValido, msj, numLinea, col));
 
                     // avanza la longitud completa del token no valido
                     int longitudInvalida = tokenNoValido.length();
@@ -69,7 +69,7 @@ public class Lexer {
                 if (!bandera) {
                     char tnoValido = linea.charAt(0);
                     String msj = "Token no reconocido: " + tnoValido;
-                    errores.add(new Errors(String.valueOf(tnoValido), msj, numLinea, col));
+                    errores.add(new Errores(String.valueOf(tnoValido), msj, numLinea, col));
 
                     // Avanza un carácter
                     linea = linea.substring(1);
@@ -82,7 +82,7 @@ public class Lexer {
     }
 
     // Getter para los errores
-    public List<Errors> getErrores() {
+    public List<Errores> getErrores() {
         return errores;
     }
 }
