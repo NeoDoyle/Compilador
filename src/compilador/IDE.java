@@ -117,7 +117,7 @@ private void colors() {
                         setCharacterAttributes(wordL, wordR - wordL, attgreen, false);
                     } else if (word.matches("(\\W)*(RET|ETD|SLD)")) {
                         setCharacterAttributes(wordL, wordR - wordL, attred, false);
-                    } else if (word.matches("(\\W)*(HUNGARO|VOGEL|ESQNOROESTE|CRUCEARROYO|RECURSOS|TAREAS|COSTOS|RESOLVER|MINIMIZAR|MAXIMIZAR|SOLVE)")) {
+                    } else if (word.matches("(\\W)*(HUNGARO|VOGEL|ESQNOROESTE|CRUCEARROYO|RECURSOS|TAREAS|COSTOS|MINIMIZAR|MAXIMIZAR|FUENTES|DESTINOS|OFERTA|DEMANDA|RESOLVER)")) {
                         setCharacterAttributes(wordL, wordR - wordL, attpurple, false);
                     }
                     wordL = wordR;

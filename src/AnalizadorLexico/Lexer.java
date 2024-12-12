@@ -69,7 +69,7 @@ public class Lexer {
                 if (!bandera) {
                     char tnoValido = linea.charAt(0);
                     String msj = "Token no reconocido: " + tnoValido;
-                    errores.add(new Errores(String.valueOf(tnoValido), msj, numLinea, col));
+                    errores.add(new Errores(String.valueOf(tnoValido), msj, numLinea, (col -1)));
 
                     // Avanza un carácter
                     linea = linea.substring(1);

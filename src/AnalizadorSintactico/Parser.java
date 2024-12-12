@@ -3,6 +3,7 @@ package AnalizadorSintactico;
 import AnalizadorLexico.Token;
 import AnalizadorLexico.Tokens;
 import AnalizadorLexico.Errores;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -28,6 +29,7 @@ public class Parser {
     private boolean destinosPresentes = false;
     private boolean ofertaPresente = false;
     private boolean demandaPresente = false;
+    private boolean resolverPresente = false;
     private String metodoActual = "";
 
     private int ultimoElementoProcesado = 0; // 1: Recursos, 2: Tareas, 3: Costos, 4: Objetivo
@@ -194,6 +196,7 @@ public class Parser {
                         ));
                     }
                     verificarOrden(3, "VOGEL");
+                    printDebugInfo();
                     parseCostos("VOGEL");
                     costosPresentes = true;
                 }
@@ -285,6 +288,19 @@ public class Parser {
                         parseCostos("ESQNOROESTE");
                         costosPresentes = true;
                     }
+                    case "RESOLVER" -> {
+                        if (!costosPresentes) {
+                        errores.add(new Errores(
+                            "RESOLVER",
+                            "Se esperaba 'COSTOS' antes de 'RESOLVER'",
+                            getCurrentToken().getLine(),
+                            getCurrentToken().getColumn()
+                        ));
+                        }
+                        verificarOrden(6, "ESQNOROESTE");
+                        parseResolver();
+                        resolverPresente = true;
+                    }
                     default -> throw new RuntimeException("Palabra clave no reconocida dentro de 'ESQNOROESTE': " + value);
                 }
             } else {
@@ -360,6 +376,19 @@ public class Parser {
                         parseCostos("CRUCEARROYO");
                         costosPresentes = true;
                     }
+                    case "RESOLVER" -> {
+                        if (!costosPresentes) {
+                        errores.add(new Errores(
+                            "RESOLVER",
+                            "Se esperaba 'COSTOS' antes de 'RESOLVER'",
+                            getCurrentToken().getLine(),
+                            getCurrentToken().getColumn()
+                        ));
+                        }
+                        verificarOrden(6, "ESQNOROESTE");
+                        parseResolver();
+                        resolverPresente = true;
+                    }
                     default -> throw new RuntimeException("Palabra clave no reconocida dentro de 'CRUCEARROYO': " + value);
                 }
             } else {
@@ -382,11 +411,12 @@ public class Parser {
             if (!objetivoPresente) faltantes.append("OBJETIVO (MINIMIZAR o MAXIMIZAR), ");
         }
         case "ESQNOROESTE", "CRUCEARROYO" -> {
-            if (!recursosPresentes) faltantes.append("FUENTES, ");
-            if (!tareasPresentes) faltantes.append("DESTINOS, ");
+            if (!fuentesPresentes) faltantes.append("FUENTES, ");
+            if (!destinosPresentes) faltantes.append("DESTINOS, ");
             if (!ofertaPresente) faltantes.append("OFERTA, ");
             if (!demandaPresente) faltantes.append("DEMANDA, ");
             if (!costosPresentes) faltantes.append("COSTOS, ");
+            if (!resolverPresente) faltantes.append("RESOLVER, ");
         }
         default -> throw new RuntimeException("Método desconocido al verificar elementos faltantes: " + metodo);
     }
@@ -422,8 +452,10 @@ public class Parser {
         case "ESQNOROESTE", "CRUCEARROYO" -> switch (elemento) {
             case 1 -> "FUENTES";
             case 2 -> "DESTINOS";
-            case 3 -> "COSTOS";
-            case 4 -> "OFERTA y DEMANDA";
+            case 3 -> "OFERTA";
+            case 4 -> "DEMANDA";
+            case 5 -> "COSTOS";
+            case 6 -> "RESOLVER";
             default -> "DESCONOCIDO";
         };
         default -> "DESCONOCIDO";
@@ -452,11 +484,8 @@ public class Parser {
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'COSTOS'");
         int numMatrices = parseListaMatrices(metodo);
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'COSTOS'");
-
+        System.out.println("Numero de matrices"+numMatrices);
         // Verificar que la matriz de costos sea cuadrada y consistente con recursos y tareas
-        if (numMatrices != numRecursos) {
-            throw new RuntimeException("El número de filas en la matriz de costos debe ser igual al número de recursos");
-        }
     }
 
     // Analiza la lista de identificadores y devuelve el conteo
@@ -473,10 +502,12 @@ public class Parser {
 
     // Analiza una lista de matrices y devuelve el conteo de filas
     private int parseListaMatrices(String metodo) {
+        printDebugInfo();
         consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar las matrices");
         int count = 0;
         do {
-            parseMatriz();
+            printDebugInfo();
+            parseMatriz(metodo);
             count++;
         } while (match(Tokens.COMMA));
         consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar las matrices");
@@ -484,30 +515,140 @@ public class Parser {
     }
     
     // Analiza una matriz
- private void parseMatriz() {
-        consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar una matriz");
-        int columnCount = 0;
-        do {
-            if (check(Tokens.NUMERO) || check(Tokens.DECIMAL)) {
-                advance();
-                columnCount++;
-            } else {
-                throw new RuntimeException("Se esperaba un numero dentro de la matriz");
-            }
-        } while (match(Tokens.COMMA));
-        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la matriz");
+private List<Double> parseFilaMatriz() {
+    System.out.println("Comenzando parseo de fila de matriz");
+    printDebugInfo(); // Mostrar información del estado actual
+    
+    // Consumir el corchete de apertura de la fila
+    if (!check(Tokens.OPEN_BRACKET)) {
+        throw new RuntimeException("Se esperaba '[' para comenzar una fila de la matriz en la línea " +
+            getCurrentToken().getLine() + " columna " + getCurrentToken().getColumn());
+    }
+    consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar una fila de la matriz");
+    System.out.println("Token consumido: '[' (corchete de apertura)"); 
+    printDebugInfo();
+    
+    List<Double> fila = new ArrayList<>();
+    int columnCount = 0;
+    
+    do {
+        Token currentToken = getCurrentToken();
+        System.out.println("Token actual: Tipo=" + currentToken.getTipo() + 
+                           ", Lexema='" + currentToken.getValor() + 
+                           "', Línea=" + currentToken.getLine() + 
+                           ", Columna=" + currentToken.getColumn());
+        
+        // Verificar si el token actual es un número válido
+        if (check(Tokens.NUMERO) || check(Tokens.DECIMAL)) {
+            // Parsear el número (entero o decimal)
+            fila.add(Double.parseDouble(currentToken.getValor()));
+            System.out.println("Número parseado: " + fila.get(fila.size() - 1));
+            advance(); // Avanzar al siguiente token
+            columnCount++;
+            printDebugInfo();
+        } else {
+            throw new RuntimeException("Se esperaba un número dentro de la matriz en la línea " + 
+                currentToken.getLine() + " columna " + currentToken.getColumn());
+        }
+    } while (match(Tokens.COMMA)); // Continuar mientras haya comas entre números
+    
+    // Consumir el corchete de cierre de la fila
+    if (!check(Tokens.CLOSE_BRACKET)) {
+        throw new RuntimeException("Se esperaba ']' para cerrar la fila de la matriz en la línea " +
+            getCurrentToken().getLine() + " columna " + getCurrentToken().getColumn());
+    }
+    consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la fila de la matriz");
+    System.out.println("Token consumido: ']' (corchete de cierre)");
+    printDebugInfo();
+    
+    
+    System.out.println("Fila de matriz parseada: " + fila);
+    return fila;
+}
 
-        // verificar que el número de columnas sea igual al número de tareas
-        if (columnCount != numTareas) {
-            throw new RuntimeException("El numero de columnas en cada matriz de costos debe ser igual al numero de tareas");
+private void parseMatriz(String metodo) {
+    System.out.println("Comenzando parseo de matriz");
+    printDebugInfo(); // Mostrar estado inicial
+    
+    List<List<Double>> matriz = new ArrayList<>();
+    int rowCount = 0;
+    
+    do {
+        System.out.println("Intentando parsear fila " + (rowCount + 1));
+        printDebugInfo();
+        
+        // Parsear una fila
+        List<Double> fila = parseFilaMatriz();
+        matriz.add(fila);
+        rowCount++;
+        
+        System.out.println("Fila parseada correctamente: " + fila);
+        printDebugInfo();
+    } while (match(Tokens.COMMA));
+    
+    // Validar dimensiones de la matriz
+ 
+    if (metodo.equals("HUNGARO") || metodo.equals("VOGEL")) {
+    if (rowCount != numRecursos) {
+        throw new RuntimeException("El número de filas en la matriz debe ser igual al número de recursos");
+    }
+} else if (metodo.equals("CRUCEARROYO") || metodo.equals("ESQNOROESTE")) {
+    if (rowCount != numFuentes) {
+        throw new RuntimeException("El número de filas en la matriz debe ser igual al número de fuentes");
+    }
+} else {
+    throw new RuntimeException("Método no reconocido: " + metodo);
+}
+
+    
+    // Validar que todas las filas tengan el mismo número de columnas
+    int columnCount = matriz.get(0).size();
+    for (List<Double> fila : matriz) {
+        if (metodo.equals("HUNGARO") || metodo.equals("VOGEL")) {
+            if (fila.size() != numTareas) {
+                throw new RuntimeException("Todas las filas de la matriz deben tener el mismo número de columnas");
+            }
+        }else if (metodo.equals("CRUCEARROYO") || metodo.equals("ESQNOROESTE")) {
+            if (fila.size() != numDestinos) {
+                throw new RuntimeException("Todas las filas de la matriz deben tener el mismo número de columnas");
+            }
         }
     }
+
+    System.out.println("Parseo de matriz completado exitosamente");
+}
+
+/**
+ * Método para mostrar el token actual y los tokens restantes para debugging.
+ */
+private void printDebugInfo() {
+    System.out.println("Estado actual del parser:");
+    if (tokens.isEmpty()) {
+        System.out.println("No hay tokens disponibles.");
+        return;
+    }
+    int currentIndex = currentTokenIndex;
+    System.out.println("Puntero actual: " + currentIndex);
+    System.out.println("Token actual: " + tokens.get(currentIndex));
+    System.out.println("Tokens restantes:");
+}
+
+
+
+
 
     // Analiza el objetivo MINIMIZAR o MAXIMIZAR
     private void parseObjetivo() {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'MINIMIZAR' o 'MAXIMIZAR'");
         consume(Tokens.SEMICOLON, "Se esperaba ';' después del objetivo");
     }
+    
+    // Analiza el objetivo MINIMIZAR o MAXIMIZAR
+    private void parseResolver() {
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'RESOLVER'");
+        consume(Tokens.SEMICOLON, "Se esperaba ';' después de RESOLVER");
+    }
+
 
     // Manejo de errores y sincronización
     private void sincronizar() {
@@ -580,6 +721,7 @@ private int parseListaNumerica() {
         destinosPresentes = false;
         ofertaPresente = false;
         demandaPresente = false;
+        resolverPresente = false;
         ultimoElementoProcesado = 0; // Restablece el control del orden
     }
 

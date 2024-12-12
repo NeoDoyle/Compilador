@@ -57,6 +57,7 @@ public class PuebaSintaxis {
                 [5, 12, 7],
                 [9, 3, 10.24]
             ];
+            RESOLVER;
         }
         """;
         
@@ -71,6 +72,7 @@ public class PuebaSintaxis {
                 [5, 12, 7],
                 [9, 3, 10.24]
             ];
+            RESOLVER;
         }
         """;
 
