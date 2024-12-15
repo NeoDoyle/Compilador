@@ -43,7 +43,7 @@ public class PuebaSintaxis {
                 [9, 3, 10.24]
             ];
             MINIMIZAR;
-        }
+        } 
         """;
         
         String entrada3 = """

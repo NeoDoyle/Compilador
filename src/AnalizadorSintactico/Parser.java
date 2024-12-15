@@ -4,6 +4,7 @@ import AnalizadorLexico.Token;
 import AnalizadorLexico.Tokens;
 import AnalizadorLexico.Errores;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -24,12 +25,12 @@ public class Parser {
     private boolean tareasPresentes = false;
     private boolean costosPresentes = false;
     private boolean objetivoPresente = false;
-    
     private boolean fuentesPresentes = false;
     private boolean destinosPresentes = false;
     private boolean ofertaPresente = false;
     private boolean demandaPresente = false;
     private boolean resolverPresente = false;
+    private boolean primerCiclo = true;
     private String metodoActual = "";
 
     private int ultimoElementoProcesado = 0; // 1: Recursos, 2: Tareas, 3: Costos, 4: Objetivo
@@ -45,7 +46,34 @@ public class Parser {
     public void parse() {
     while (!isAtEnd()) {
         try {
-            parseStatement(); // Analiza una declaración principal, como HUNGARO, VOGEL, etc.
+            if (primerCiclo == true) {
+                parseMetodo(); // Analiza la primera declaración principal (HUNGARO, VOGEL, etc.)
+            } else {
+                System.out.println("Entrando al bloque después de error");
+                printDebugInfo();
+                if(!isAtEnd()){
+                    switch(metodoActual){
+                        case "HUNGARO" -> {
+                            System.out.println("Volviendo al método" + metodoActual + "después de error");
+                            parseHungaro();
+                        }
+                        case "VOGEL" -> {
+                            System.out.println("Volviendo al método" + metodoActual + "después de error");
+                            parseVogel();
+                        }
+                        case "ESQNOROESTE" -> {
+                            System.out.println("Volviendo al método" + metodoActual + "después de error");
+                            parseEsqNoroeste();
+                        }
+                        case "CRUCEARROYO" -> {
+                            System.out.println("Volviendo al método" + metodoActual + "después de error");
+                            parseCruceArroyo();
+                        }
+                        default -> throw new RuntimeException("Método no reconocido33");
+                    }
+                }
+                
+            }
         } catch (RuntimeException e) {
             errores.add(new Errores(
                     getCurrentToken().getValor(),
@@ -53,7 +81,10 @@ public class Parser {
                     getCurrentToken().getLine(),
                     getCurrentToken().getColumn()
             ));
-            sincronizar(); // Intenta continuar después del error
+
+              sincronizar(); // Intenta continuar después del error
+      
+            
         }
     }
 
@@ -74,34 +105,29 @@ public class Parser {
 
 
     // Analiza una declaración principal
-    private void parseStatement() {
+    private void parseMetodo() {
     if (check(Tokens.PALABRA_CLAVE) && getCurrentToken().getValor().equals("HUNGARO")) {
         metodoActual = "HUNGARO";
-        inicializarEstado(); // Restablece el estado de los elementos requeridos
         parseHungaro();
     } else if (check(Tokens.PALABRA_CLAVE) && getCurrentToken().getValor().equals("VOGEL")) {
         metodoActual = "VOGEL";
-        inicializarEstado(); // Restablece el estado de los elementos requeridos
         parseVogel();
     } else if (check(Tokens.PALABRA_CLAVE) && getCurrentToken().getValor().equals("ESQNOROESTE")) {
         metodoActual = "ESQNOROESTE";
-        inicializarEstado(); // Restablece el estado de los elementos requeridos
         parseEsqNoroeste();
     } else if (check(Tokens.PALABRA_CLAVE) && getCurrentToken().getValor().equals("CRUCEARROYO")) {
         metodoActual = "CRUCEARROYO";
-        inicializarEstado(); // Restablece el estado de los elementos requeridos
         parseCruceArroyo();
     } else {
-        throw new RuntimeException("Método no reconocido: " + getCurrentToken().getValor());
+        throw new RuntimeException("Método no reconocido11: " + getCurrentToken().getValor());
     }
 }
-
 
     // Analiza una declaración de asignación
     private void parseHungaro() {
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'HUNGARO'");
     consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'HUNGARO'");
-
+    metodoActual = "HUNGARO";
     while (!check(Tokens.CLOSE_BRACE)) {
         if (check(Tokens.PALABRA_CLAVE)) {
             String value = getCurrentToken().getValor();
@@ -161,9 +187,17 @@ public class Parser {
 }
     
      private void parseVogel() {
-    consume(Tokens.PALABRA_CLAVE, "Se esperaba 'VOGEL'");
-    consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'VOGEL'");
-
+    if(primerCiclo == true){
+       System.out.println("Estamos en el primer ciclo");
+       printDebugInfo();
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'VOGEL'");
+        printDebugInfo();
+        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'VOGEL'");
+        printDebugInfo(); 
+    }else{
+        System.out.println("No estamos en el primer ciclo");
+    }
+    
     while (!check(Tokens.CLOSE_BRACE)) {
         if (check(Tokens.PALABRA_CLAVE)) {
             String value = getCurrentToken().getValor();
@@ -183,7 +217,9 @@ public class Parser {
                         ));
                     }
                     verificarOrden(2, "VOGEL");
+                    printDebugInfo();
                     parseTareas();
+                    printDebugInfo();
                     tareasPresentes = true;
                 }
                 case "COSTOS" -> {
@@ -198,6 +234,7 @@ public class Parser {
                     verificarOrden(3, "VOGEL");
                     printDebugInfo();
                     parseCostos("VOGEL");
+                    printDebugInfo();
                     costosPresentes = true;
                 }
                 case "MINIMIZAR", "MAXIMIZAR" -> {
@@ -213,7 +250,9 @@ public class Parser {
                     parseObjetivo();
                     objetivoPresente = true;
                 }
-                default -> throw new RuntimeException("Palabra clave no reconocida dentro de 'VOGEL': " + value);
+                default -> {
+                    throw new RuntimeException("Palabra clave no reconocida dentro de 'VOGEL': " + value);
+                }
             }
         } else {
             throw new RuntimeException("Se esperaba una palabra clave dentro de 'VOGEL'");
@@ -465,17 +504,25 @@ public class Parser {
     // Analiza la lista de recursos
     private void parseRecursos() {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'RECURSOS'");
+        printDebugInfo();
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'RECURSOS'");
+        printDebugInfo();
         numRecursos = parseListaIdentificadores();
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'RECURSOS'");
+        printDebugInfo();
     }
 
     // Analiza la lista de tareas
     private void parseTareas() {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'TAREAS'");
+        printDebugInfo();
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'TAREAS'");
+        printDebugInfo();
         numTareas = parseListaIdentificadores();
+        System.out.println("A punto de evaluar el semicolon");
+        printDebugInfo();
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'TAREAS'");
+        printDebugInfo();
     }
 
     // Analiza las matrices de costos
@@ -491,12 +538,19 @@ public class Parser {
     // Analiza la lista de identificadores y devuelve el conteo
     private int parseListaIdentificadores() {
         consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de identificadores");
+        printDebugInfo();
         int count = 0;
         do {
+            printDebugInfo();
             consume(Tokens.IDENTIFICADOR, "Se esperaba un identificador");
+            printDebugInfo();
             count++;
         } while (match(Tokens.COMMA));
+        System.out.println("Antes de evaluar el close bracket de tareas");
+        printDebugInfo();
         consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de identificadores");
+        System.out.println("Despues de evaluar el close bracket de tareas");
+        printDebugInfo();
         return count;
     }
 
@@ -589,15 +643,20 @@ private void parseMatriz(String metodo) {
     // Validar dimensiones de la matriz
  
     if (metodo.equals("HUNGARO") || metodo.equals("VOGEL")) {
-    if (rowCount != numRecursos) {
-        throw new RuntimeException("El número de filas en la matriz debe ser igual al número de recursos");
+    if(numRecursos > 0){
+        if (rowCount != numRecursos) {
+            throw new RuntimeException("El número de filas en la matriz debe ser igual al número de recursos");
+        }
     }
+    
 } else if (metodo.equals("CRUCEARROYO") || metodo.equals("ESQNOROESTE")) {
-    if (rowCount != numFuentes) {
-        throw new RuntimeException("El número de filas en la matriz debe ser igual al número de fuentes");
-    }
+    if(numFuentes > 0){
+        if (rowCount != numFuentes) {
+                throw new RuntimeException("El número de filas en la matriz debe ser igual al número de fuentes");
+            }
+    } 
 } else {
-    throw new RuntimeException("Método no reconocido: " + metodo);
+    throw new RuntimeException("Método no reconocido22: " + metodo);
 }
 
     
@@ -605,11 +664,11 @@ private void parseMatriz(String metodo) {
     int columnCount = matriz.get(0).size();
     for (List<Double> fila : matriz) {
         if (metodo.equals("HUNGARO") || metodo.equals("VOGEL")) {
-            if (fila.size() != numTareas) {
+            if (fila.size() != columnCount) {
                 throw new RuntimeException("Todas las filas de la matriz deben tener el mismo número de columnas");
             }
         }else if (metodo.equals("CRUCEARROYO") || metodo.equals("ESQNOROESTE")) {
-            if (fila.size() != numDestinos) {
+            if (fila.size() != columnCount) {
                 throw new RuntimeException("Todas las filas de la matriz deben tener el mismo número de columnas");
             }
         }
@@ -630,7 +689,6 @@ private void printDebugInfo() {
     int currentIndex = currentTokenIndex;
     System.out.println("Puntero actual: " + currentIndex);
     System.out.println("Token actual: " + tokens.get(currentIndex));
-    System.out.println("Tokens restantes:");
 }
 
 
@@ -652,20 +710,20 @@ private void printDebugInfo() {
 
     // Manejo de errores y sincronización
     private void sincronizar() {
-        advance(); // Avanza al siguiente token
+        primerCiclo = false;
+        System.out.println("Antes del advance");
+        printDebugInfo();
+        System.out.println("Despues del advance");
+        printDebugInfo();
         while (!isAtEnd()) {
-            if (getPreviousToken().getTipo() == Tokens.SEMICOLON) {
+            if (getCurrentToken().getTipo() == Tokens.PALABRA_CLAVE) {
                 return;
-            }
-
-            switch (getCurrentToken().getTipo()) {
-                case PALABRA_CLAVE, IDENTIFICADOR -> {
-                    return;
-                }
             }
             advance();
         }
     }
+    
+
     
 private void parseFuentes() {
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'FUENTES'");
@@ -713,15 +771,7 @@ private int parseListaNumerica() {
 
     // Métodos de ayuda
     private void inicializarEstado() {
-        recursosPresentes = false;
-        tareasPresentes = false;
-        costosPresentes = false;
-        objetivoPresente = false;
-        fuentesPresentes = false;
-        destinosPresentes = false;
-        ofertaPresente = false;
-        demandaPresente = false;
-        resolverPresente = false;
+        primerCiclo = false;
         ultimoElementoProcesado = 0; // Restablece el control del orden
     }
 
@@ -754,7 +804,7 @@ private int parseListaNumerica() {
             throw new RuntimeException(errorMessage);
         }
     }
-
+    
     private boolean isAtEnd() {
         return currentTokenIndex >= tokens.size();
     }
