@@ -125,9 +125,16 @@ public class Parser {
 
     // Analiza una declaración de asignación
     private void parseHungaro() {
-    consume(Tokens.PALABRA_CLAVE, "Se esperaba 'HUNGARO'");
-    consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'HUNGARO'");
-    metodoActual = "HUNGARO";
+    if(primerCiclo == true){
+       System.out.println("Estamos en el primer ciclo");
+       printDebugInfo();
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'HUNGARO'");
+        printDebugInfo();
+        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'HUNGARO'");
+        printDebugInfo(); 
+    }else{
+        System.out.println("No estamos en el primer ciclo");
+    }
     while (!check(Tokens.CLOSE_BRACE)) {
         if (check(Tokens.PALABRA_CLAVE)) {
             String value = getCurrentToken().getValor();
@@ -263,8 +270,16 @@ public class Parser {
 }
 
     private void parseEsqNoroeste() {
-        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'ESQNOROESTE'");
-        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'ESQNOROESTE'");
+        if(primerCiclo == true){
+            System.out.println("Estamos en el primer ciclo");
+            printDebugInfo();
+             consume(Tokens.PALABRA_CLAVE, "Se esperaba 'ESQNOROESTE'");
+             printDebugInfo();
+             consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'ESQNOROESTE'");
+             printDebugInfo(); 
+         }else{
+             System.out.println("No estamos en el primer ciclo");
+         }
 
         while (!check(Tokens.CLOSE_BRACE)) {
             if (check(Tokens.PALABRA_CLAVE)) {
@@ -351,8 +366,16 @@ public class Parser {
     }
     
         private void parseCruceArroyo() {
-        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'CRUCEARROYO'");
-        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'CRUCEARROYO'");
+        if(primerCiclo == true){
+            System.out.println("Estamos en el primer ciclo");
+            printDebugInfo();
+             consume(Tokens.PALABRA_CLAVE, "Se esperaba 'CRUCEARROYO'");
+             printDebugInfo();
+             consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'CRUCEARROYO'");
+             printDebugInfo(); 
+         }else{
+             System.out.println("No estamos en el primer ciclo");
+         }
 
         while (!check(Tokens.CLOSE_BRACE)) {
             if (check(Tokens.PALABRA_CLAVE)) {
