@@ -22,22 +22,23 @@ public class TablaSimbolosFrame extends JFrame {
 
     public TablaSimbolosFrame() {
         setTitle("Tabla de Símbolos");
-        setSize(600, 400);
+        setSize(1500, 100);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Crear modelo de tabla
-        String[] columnNames = {"Nombre", "Tipo", "Contenido"};
+        String[] columnNames = {"Nombre", "Tipo", "Método", "Contenido"};
         tableModel = new DefaultTableModel(columnNames, 0);
         tablaSimbolos = new JTable(tableModel);
 
         // Configurar scroll y agregar a la ventana
         JScrollPane scrollPane = new JScrollPane(tablaSimbolos);
         add(scrollPane, BorderLayout.CENTER);
+        pack();
     }
 
-    public void registrarSimbolo(String nombre, String tipo, String contenido) {
-        tableModel.addRow(new Object[]{nombre, tipo, contenido});
+    public void registrarSimbolo(String nombre, String tipo, String metodo, String contenido) {
+        tableModel.addRow(new Object[]{nombre, tipo, metodo, contenido});
     }
 
     public void actualizarTabla(List<Object[]> simbolos) {

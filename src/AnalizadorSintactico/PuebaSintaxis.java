@@ -98,8 +98,8 @@ public class PuebaSintaxis {
 
         // Paso 2: Análisis sintáctico
         List<Errores> erroresSintacticos = new ArrayList<>();
-        Parser parser = new Parser(tokens, erroresSintacticos);
-        parser.parse();
+        //Parser parser = new Parser(tokens, erroresSintacticos);
+        //parser.parse();
 
         // Mostrar errores sintácticos
         if (!erroresSintacticos.isEmpty()) {

@@ -18,7 +18,7 @@ public enum Tokens {
     IDENTIFICADOR("[a-zA-Z_][a-zA-Z0-9_]*"), // Identificadores
     DECIMAL("\\d+\\.\\d+"),                  // Números decimales
     NUMERO("\\d+"),                          // Números enteros
-    COMMA(","),                              // Coma
+    COMA(","),                              // Coma
 
 
     // Operadores

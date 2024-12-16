@@ -7,13 +7,13 @@ import compilador.TablaSimbolosFrame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import javax.swing.JOptionPane;
 
 public class Parser {
 
     private final List<Token> tokens;
     private final List<Errores> errores;
-    private TablaSimbolosFrame tablaSimbolosFrame = new TablaSimbolosFrame();
+    private TablaSimbolosFrame tablaSimbolos;
     private int currentTokenIndex;
 
     private int numRecursos = 0;
@@ -22,6 +22,7 @@ public class Parser {
     private int numDestinos = 0;
     private int numOfertas = 0;
     private int numDemandas = 0;
+    private int numMatrices = 0;
     
     private boolean recursosPresentes = false;
     private boolean tareasPresentes = false;
@@ -38,10 +39,11 @@ public class Parser {
     private int ultimoElementoProcesado = 0; // 1: Recursos, 2: Tareas, 3: Costos, 4: Objetivo
 
     // Constructor
-    public Parser(List<Token> tokens, List<Errores> errores) {
+    public Parser(List<Token> tokens, List<Errores> errores, TablaSimbolosFrame tablaSimbolos) {
         this.tokens = tokens;
         this.errores = errores;
         this.currentTokenIndex = 0;
+        this.tablaSimbolos = tablaSimbolos;
     }
 
     // Metodo principal para iniciar el analisis
@@ -557,7 +559,8 @@ public class Parser {
         printDebugInfo();
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'RECURSOS'");
         printDebugInfo();
-        numRecursos = parseListaIdentificadores();
+        String listaIdentificadores = parseListaIdentificadores("RECURSOS");
+        tablaSimbolos.registrarSimbolo("RECURSOS", "Lista de Identificadores", metodoActual, listaIdentificadores);
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'RECURSOS'");
         printDebugInfo();
     }
@@ -568,7 +571,8 @@ public class Parser {
         printDebugInfo();
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'TAREAS'");
         printDebugInfo();
-        numTareas = parseListaIdentificadores();
+        String listaIdentificadores = parseListaIdentificadores("TAREAS");
+        tablaSimbolos.registrarSimbolo("TAREAS", "Lista de Identificadores", metodoActual, listaIdentificadores);
         System.out.println("A punto de evaluar el semicolon");
         printDebugInfo();
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'TAREAS'");
@@ -579,41 +583,69 @@ public class Parser {
     private void parseCostos(String metodo) {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'COSTOS'");
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'COSTOS'");
-        int numMatrices = parseListaMatrices(metodo);
+        // Lista que contendrá todas las matrices parseadas
+        List<List<List<Double>>> matrices = new ArrayList<>();
+        int numMatrices = parseListaMatrices(matrices);
+        StringBuilder listaMatrices = new StringBuilder("[");
+        for (int i = 0; i < matrices.size(); i++) {
+            if (i > 0) listaMatrices.append(", ");
+            listaMatrices.append(matrices.get(i)); // `toString` de la lista de listas
+        }
+        listaMatrices.append("]");
+    
+        tablaSimbolos.registrarSimbolo("COSTOS", "Matriz de decimales", metodoActual, listaMatrices.toString());
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'COSTOS'");
         System.out.println("Numero de matrices"+numMatrices);
-        // Verificar que la matriz de costos sea cuadrada y consistente con recursos y tareas
+        
     }
 
     // Analiza la lista de identificadores y devuelve el conteo
-    private int parseListaIdentificadores() {
+    private String parseListaIdentificadores(String variable) {
         consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de identificadores");
         printDebugInfo();
         int count = 0;
+        
+        StringBuilder lista = new StringBuilder("[");
+        boolean first = true;
         do {
+            if(!first){
+                lista.append(",");
+            }
             printDebugInfo();
+            String caracter = getCurrentToken().getValor();
+            lista.append(caracter);
             consume(Tokens.IDENTIFICADOR, "Se esperaba un identificador");
+            first = false;
             printDebugInfo();
             count++;
-        } while (match(Tokens.COMMA));
+        } while (match(Tokens.COMA));
         System.out.println("Antes de evaluar el close bracket de tareas");
         printDebugInfo();
         consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de identificadores");
+        lista.append("]");
         System.out.println("Despues de evaluar el close bracket de tareas");
         printDebugInfo();
-        return count;
+        switch(variable){
+            case "RECURSOS" -> numRecursos = count;
+            case "TAREAS" -> numTareas = count;
+            case "FUENTES" -> numFuentes = count;
+            case "DESTINOS" -> numDestinos = count;
+        }
+        return lista.toString();
     }
 
     // Analiza una lista de matrices y devuelve el conteo de filas
-    private int parseListaMatrices(String metodo) {
+    private int parseListaMatrices(List<List<List<Double>>> matrices) {
         printDebugInfo();
         consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar las matrices");
         int count = 0;
         do {
             printDebugInfo();
-            parseMatriz(metodo);
+            List<List<Double>> matriz = parseMatriz();
+            matrices.add(matriz);
+            //parseMatriz(metodoActual);
             count++;
-        } while (match(Tokens.COMMA));
+        } while (match(Tokens.COMA));
         consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar las matrices");
         return count;
     }
@@ -654,7 +686,7 @@ private List<Double> parseFilaMatriz() {
             throw new RuntimeException("Se esperaba un número dentro de la matriz en la línea " + 
                 currentToken.getLine() + " columna " + currentToken.getColumn());
         }
-    } while (match(Tokens.COMMA)); // Continuar mientras haya comas entre números
+    } while (match(Tokens.COMA)); // Continuar mientras haya comas entre números
     
     // Consumir el corchete de cierre de la fila
     if (!check(Tokens.CLOSE_BRACKET)) {
@@ -670,7 +702,7 @@ private List<Double> parseFilaMatriz() {
     return fila;
 }
 
-private void parseMatriz(String metodo) {
+private List<List<Double>> parseMatriz() {
     System.out.println("Comenzando parseo de matriz");
     printDebugInfo(); // Mostrar estado inicial
     
@@ -688,36 +720,36 @@ private void parseMatriz(String metodo) {
         
         System.out.println("Fila parseada correctamente: " + fila);
         printDebugInfo();
-    } while (match(Tokens.COMMA));
+    } while (match(Tokens.COMA));
     
     // Validar dimensiones de la matriz
  
-    if (metodo.equals("HUNGARO") || metodo.equals("VOGEL")) {
+    if (metodoActual.equals("HUNGARO") || metodoActual.equals("VOGEL")) {
     if(numRecursos > 0){
         if (rowCount != numRecursos) {
             throw new RuntimeException("El número de filas en la matriz debe ser igual al número de recursos");
         }
     }
     
-} else if (metodo.equals("CRUCEARROYO") || metodo.equals("ESQNOROESTE")) {
+} else if (metodoActual.equals("CRUCEARROYO") || metodoActual.equals("ESQNOROESTE")) {
     if(numFuentes > 0){
         if (rowCount != numFuentes) {
                 throw new RuntimeException("El número de filas en la matriz debe ser igual al número de fuentes");
             }
     } 
 } else {
-    throw new RuntimeException("Método no reconocido22: " + metodo);
+    throw new RuntimeException("Método no reconocido: " + metodoActual);
 }
 
     
     // Validar que todas las filas tengan el mismo número de columnas
     int columnCount = matriz.get(0).size();
     for (List<Double> fila : matriz) {
-        if (metodo.equals("HUNGARO") || metodo.equals("VOGEL")) {
+        if (metodoActual.equals("HUNGARO") || metodoActual.equals("VOGEL")) {
             if (fila.size() != columnCount) {
                 throw new RuntimeException("Todas las filas de la matriz deben tener el mismo número de columnas");
             }
-        }else if (metodo.equals("CRUCEARROYO") || metodo.equals("ESQNOROESTE")) {
+        }else if (metodoActual.equals("CRUCEARROYO") || metodoActual.equals("ESQNOROESTE")) {
             if (fila.size() != columnCount) {
                 throw new RuntimeException("Todas las filas de la matriz deben tener el mismo número de columnas");
             }
@@ -725,6 +757,7 @@ private void parseMatriz(String metodo) {
     }
 
     System.out.println("Parseo de matriz completado exitosamente");
+    return matriz;
 }
 
 /**
@@ -751,18 +784,21 @@ private void printDebugInfo() {
         printDebugInfo();
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'MINIMIZAR' o 'MAXIMIZAR'");
         printDebugInfo();
+        tablaSimbolos.registrarSimbolo(getPreviousToken().getValor(), "Función", metodoActual, "Ejecutar el programa");
         consume(Tokens.SEMICOLON, "Se esperaba ';' después del objetivo");
     }
     
     // Analiza el objetivo MINIMIZAR o MAXIMIZAR
     private void parseResolver() {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'RESOLVER'");
+        tablaSimbolos.registrarSimbolo("RESOLVER", "Función", metodoActual, "Ejecutar el programa");
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de RESOLVER");
     }
 
 
     // Manejo de errores y sincronización
     private void sincronizar() {
+        int contadorCiclos = 0;
         primerCiclo = false;
         System.out.println("Antes del advance");
         printDebugInfo();
@@ -771,17 +807,46 @@ private void printDebugInfo() {
         while (!isAtEnd()) {
             if (getCurrentToken().getTipo() == Tokens.PALABRA_CLAVE) {
                 switch(getCurrentToken().getValor()){
-                    case "HUNGARO" -> metodoActual = "HUNGARO";
+                    case "HUNGARO" -> {
+                        metodoActual = "HUNGARO";
+                        advance();
+                        contadorCiclos++;
+                        if(contadorCiclos>50){
+                            salirConfirmacion();
+                        }
+                    }
                     case "VOGEL" -> {
                         metodoActual = "VOGEL";
                         advance();
+                        contadorCiclos++;
+                        if(contadorCiclos>50){
+                            salirConfirmacion();
+                        }
                     }
-                    case "ESQNOROESTE" -> metodoActual = "ESQNOROESTE";
-                    case "CRUCEARROYO" -> metodoActual = "CRUCEARROYO";
+                    case "ESQNOROESTE" -> {
+                        metodoActual = "ESQNOROESTE";
+                        advance();
+                        contadorCiclos++;
+                        if(contadorCiclos>50){
+                            salirConfirmacion();
+                        }
+                    }
+                    case "CRUCEARROYO" -> {
+                        metodoActual = "CRUCEARROYO";
+                        advance();
+                        contadorCiclos++;
+                        if(contadorCiclos>50){
+                            salirConfirmacion();
+                        }
+                    }
                 }
                 return;
             }
             advance();
+            contadorCiclos++;
+            if(contadorCiclos>50){
+                            salirConfirmacion();
+                        }
         }
     }
     
@@ -790,45 +855,63 @@ private void printDebugInfo() {
 private void parseFuentes() {
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'FUENTES'");
     consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'FUENTES'");
-    numFuentes = parseListaIdentificadores();
+    String listaIdentificadores = parseListaIdentificadores("FUENTES");
+    tablaSimbolos.registrarSimbolo("FUENTES", "Lista de Identificadores", metodoActual, listaIdentificadores);
     consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'FUENTES'");
 }
 
 private void parseDestinos() {
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'DESTINOS'");
     consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'DESTINOS'");
-    numDestinos = parseListaIdentificadores();
+    String listaIdentificadores = parseListaIdentificadores("DESTINOS");
+    tablaSimbolos.registrarSimbolo("DESTINOS", "Lista de Identificadores", metodoActual, listaIdentificadores);
     consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'DESTINOS'");
 }
 
 private void parseOferta() {
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'OFERTA'");
     consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'OFERTA'");
-    parseListaNumerica();
+    String listaNumerica = parseListaNumerica("OFERTA");
+    tablaSimbolos.registrarSimbolo("OFERTA", "Lista Numérica", metodoActual, listaNumerica);
     consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'OFERTA'");
 }
 
 private void parseDemanda() {
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'DEMANDA'");
     consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'DEMANDA'");
-    parseListaNumerica();
+    String listaNumerica = parseListaNumerica("DEMANDA");
+    tablaSimbolos.registrarSimbolo("DEMANDA", "Lista Numérica", metodoActual, listaNumerica);
     consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'DEMANDA'");
 }
 
 // Analiza una lista de valores numéricos y devuelve el conteo
-private int parseListaNumerica() {
+private String parseListaNumerica(String variable) {
     consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de valores numéricos");
     int count = 0;
+    StringBuilder lista = new StringBuilder("[");
+    lista.append("[");
+    boolean first = true;
     do {
+        if(!first){
+                lista.append(",");
+        }
+        String caracter = getCurrentToken().getValor();
+        lista.append(caracter);
+        first = false;
         if (check(Tokens.NUMERO) || check(Tokens.DECIMAL)) {
             advance(); // Avanza si el token es un número válido (entero o decimal)
             count++;
         } else {
             throw new RuntimeException("Se esperaba un valor numérico (entero o decimal)");
         }
-    } while (match(Tokens.COMMA)); // Permite múltiples valores separados por comas
+    } while (match(Tokens.COMA)); // Permite múltiples valores separados por comas
     consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de valores numéricos");
-    return count;
+    lista.append("]");
+    switch(variable){
+            case "OFERTA" -> numOfertas = count;
+            case "DEMANDA" -> numDemandas = count;
+        }
+        return lista.toString();
 }
 
     // Métodos de ayuda
@@ -864,7 +947,7 @@ private int parseListaNumerica() {
 
     private boolean match(Tokens expected) {
         if (check(expected)) {
-            consume(Tokens.COMMA, "Se esperaba una coma");
+            consume(Tokens.COMA, "Se esperaba una coma");
             return true;
         }
         return false;
@@ -895,5 +978,13 @@ private int parseListaNumerica() {
 
     private Token getPreviousToken() {
         return tokens.get(currentTokenIndex - 1);
+    }
+    
+    private static void salirConfirmacion() {
+        int response = JOptionPane.showConfirmDialog(null, "¿Deseas salir del bucle?", "Confirmar salida",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (response == JOptionPane.YES_OPTION){
+            System.exit(0);
+        }
     }
 }

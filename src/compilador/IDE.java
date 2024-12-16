@@ -8,7 +8,7 @@ import AnalizadorLexico.Lexer;
 import AnalizadorLexico.Token;
 import AnalizadorLexico.Errores;
 import AnalizadorSintactico.Parser;
-
+import compilador.TablaSimbolosFrame;
 
 
 import java.awt.Color;
@@ -33,6 +33,7 @@ public class IDE extends javax.swing.JFrame {
     NumeroLinea numerolinea;
     Directorio dir;
     TokensTableFrame tokensFrame; // Ventana de la tabla de tokens
+    TablaSimbolosFrame tablaSimbolos;
     /**
      * Creates new form IDE
      */
@@ -217,7 +218,7 @@ private void colors() {
         });
 
         btnIdentifiers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/Icon/icons8-text-cursor-48.png"))); // NOI18N
-        btnIdentifiers.setText("Ident");
+        btnIdentifiers.setText("Simbolos");
         btnIdentifiers.setToolTipText("Identación");
         btnIdentifiers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnIdentifiers.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/pressed/icons8-text-cursor-48.png"))); // NOI18N
@@ -296,11 +297,11 @@ private void colors() {
                                 .addComponent(btnAbrir)
                                 .addGap(44, 44, 44)
                                 .addComponent(btnReservadas)
-                                .addGap(48, 48, 48)
-                                .addComponent(btnIdentifiers)
-                                .addGap(46, 46, 46)
+                                .addGap(55, 55, 55)
                                 .addComponent(btnTokens)
-                                .addGap(47, 47, 47)
+                                .addGap(40, 40, 40)
+                                .addComponent(btnIdentifiers)
+                                .addGap(51, 51, 51)
                                 .addComponent(btnCompilar))
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGap(112, 112, 112)
@@ -322,7 +323,8 @@ private void colors() {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -340,10 +342,10 @@ private void colors() {
                             .addComponent(btnGuardar)
                             .addComponent(btnAbrir)
                             .addComponent(btnReservadas)
-                            .addComponent(btnIdentifiers)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(btnCompilar)
-                                .addComponent(btnTokens)))
+                                .addComponent(btnCompilar, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(btnTokens, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addComponent(btnIdentifiers))
                         .addGap(42, 42, 42)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -377,7 +379,16 @@ private void colors() {
     }//GEN-LAST:event_btnReservadasActionPerformed
 
     private void btnIdentifiersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIdentifiersActionPerformed
-        // TODO add your handling code here:
+        if (tablaSimbolos != null) {
+        if (tablaSimbolos.isVisible()) {
+            tablaSimbolos.dispose();
+        } else {
+            tablaSimbolos.setVisible(true); // Abrir la ventana si está cerrada
+        }
+    } else {
+        JOptionPane.showMessageDialog(this, "Debe compilar el código para generar la tabla de simbolos.", 
+                                      "Información", JOptionPane.INFORMATION_MESSAGE);
+    }
     }//GEN-LAST:event_btnIdentifiersActionPerformed
 
     private void btnTokensActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTokensActionPerformed
@@ -414,10 +425,16 @@ private void colors() {
         resultado.append("\nSe ha detenido el analisis sintáctico.");
     } else {
         resultado.append("\nNo se encontraron errores léxicos.\n");
-
+        
+        // Crear instancia de la tabla de símbolos antes de ejecutar el parser
+        if (tablaSimbolos != null) {
+            tablaSimbolos.dispose(); // Cerrar ventana previa si existe
+        }
+        tablaSimbolos = new TablaSimbolosFrame();
+        
         // Ejecutar el Parser si no hay errores léxicos
         List<Errores> erroresSintacticos = new ArrayList<>();
-        Parser parser = new Parser(tokens, erroresSintacticos);
+        Parser parser = new Parser(tokens, erroresSintacticos, tablaSimbolos);
         parser.parse();
 
         if (!erroresSintacticos.isEmpty()) {
@@ -439,6 +456,7 @@ private void colors() {
     } else {
         tokensFrame.updateTokens(tokens); // Actualizar la tabla si ya existe
     }
+
     }//GEN-LAST:event_btnCompilarActionPerformed
 
     private void jtpCodeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpCodeKeyReleased
