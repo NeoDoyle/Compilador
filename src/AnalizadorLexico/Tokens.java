@@ -22,19 +22,14 @@ public enum Tokens {
 
 
     // Operadores
-    COMPARACION(">=|<=|==|!="),              // Operadores relacionales largos
-    RELACIONALES("[><]"),                    // Operadores relacionales simples
     ASIGNACION("="),                         // Asignación
-    ARITMETICA("[+\\-*/%]"),                 // Operadores aritméticos
 
     // Símbolos especiales
     SEMICOLON(";"),                          // Punto y coma
-    OPEN_BRACE("\\{"),  // {                 // llave de apertura
-    CLOSE_BRACE("\\}"), // }                 // llave de cierre
+    OPEN_LLAVE("\\{"),  // {                 // llave de apertura
+    CLOSE_LLAVE("\\}"), // }                 // llave de cierre
     OPEN_BRACKET("\\["), // [                // corchete de apertura
     CLOSE_BRACKET("\\]"), // ]               // corchete de cierre
-    OPEN_PAREN("\\("),                       // Paréntesis de apertura
-    CLOSE_PAREN("\\)"),                      // Paréntesis de cierre
    
     // Comentarios
     COMENTARIO("//.*$");

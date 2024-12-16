@@ -173,12 +173,12 @@ public class Parser {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'HUNGARO'",parentNode);
         parentNode.add(hungaroNode);
         printDebugInfo();
-        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'HUNGARO'",hungaroNode);
+        consume(Tokens.OPEN_LLAVE, "Se esperaba '{' después de 'HUNGARO'",hungaroNode);
         printDebugInfo(); 
     }else{
         System.out.println("No estamos en el primer ciclo");
     }
-    while (!check(Tokens.CLOSE_BRACE)) {
+    while (!check(Tokens.CLOSE_LLAVE)) {
         if (check(Tokens.PALABRA_CLAVE)) {
             String value = getCurrentToken().getValor();
             switch (value) {
@@ -233,7 +233,7 @@ public class Parser {
         }
     }
 
-    consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'HUNGARO'",hungaroNode);
+    consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'HUNGARO'",hungaroNode);
 }
     
      private void parseVogel(DefaultMutableTreeNode parentNode) {
@@ -245,14 +245,14 @@ public class Parser {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'VOGEL'",parentNode);
         parentNode.add(vogelNode);
         printDebugInfo();
-        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'VOGEL'",parentNode);
+        consume(Tokens.OPEN_LLAVE, "Se esperaba '{' después de 'VOGEL'",parentNode);
         printDebugInfo(); 
     }else{
         System.out.println("No estamos en el primer ciclo");
         System.out.println("MetodoActual: "+metodoActual);
     }
     
-    while (!check(Tokens.CLOSE_BRACE)) {
+    while (!check(Tokens.CLOSE_LLAVE)) {
         if (check(Tokens.PALABRA_CLAVE)) {
             String value = getCurrentToken().getValor();
             switch (value) {
@@ -314,7 +314,7 @@ public class Parser {
     }
     System.out.println("A PUNTO DE CERRAR EL METODO");
     printDebugInfo();
-    consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'VOGEL'",vogelNode);
+    consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'VOGEL'",vogelNode);
     System.out.println("DESPUÉS DE CERRAR EL METODO");
 }
 
@@ -327,13 +327,13 @@ public class Parser {
              consume(Tokens.PALABRA_CLAVE, "Se esperaba 'ESQNOROESTE'",esqNoroesteNode);
              parentNode.add(esqNoroesteNode);
              printDebugInfo();
-             consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'ESQNOROESTE'",esqNoroesteNode);
+             consume(Tokens.OPEN_LLAVE, "Se esperaba '{' después de 'ESQNOROESTE'",esqNoroesteNode);
              printDebugInfo(); 
          }else{
              System.out.println("No estamos en el primer ciclo");
          }
 
-        while (!check(Tokens.CLOSE_BRACE)) {
+        while (!check(Tokens.CLOSE_LLAVE)) {
             if (check(Tokens.PALABRA_CLAVE)) {
                 String value = getCurrentToken().getValor();
                 switch (value) {
@@ -414,7 +414,7 @@ public class Parser {
             }
         }
 
-        consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'ESQNOROESTE'",esqNoroesteNode);
+        consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'ESQNOROESTE'",esqNoroesteNode);
     }
     
         private void parseCruceArroyo(DefaultMutableTreeNode parentNode) {
@@ -426,13 +426,13 @@ public class Parser {
              consume(Tokens.PALABRA_CLAVE, "Se esperaba 'CRUCEARROYO'",parentNode);
              parentNode.add(cruceArroyoNode);
              printDebugInfo();
-             consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'CRUCEARROYO'",parentNode);
+             consume(Tokens.OPEN_LLAVE, "Se esperaba '{' después de 'CRUCEARROYO'",parentNode);
              printDebugInfo(); 
          }else{
              System.out.println("No estamos en el primer ciclo");
          }
 
-        while (!check(Tokens.CLOSE_BRACE)) {
+        while (!check(Tokens.CLOSE_LLAVE)) {
             if (check(Tokens.PALABRA_CLAVE)) {
                 String value = getCurrentToken().getValor();
                 switch (value) {
@@ -513,7 +513,7 @@ public class Parser {
             }
         }
 
-        consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'CRUCEARROYO'",cruceArroyoNode);
+        consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'CRUCEARROYO'",cruceArroyoNode);
     }
     
     // Verifica si algún elemento obligatorio falta
@@ -872,7 +872,6 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
     parentNode.add(listaNode);
     int count = 0;
     StringBuilder lista = new StringBuilder("[");
-    lista.append("[");
     boolean first = true;
     do {
         if(!first){

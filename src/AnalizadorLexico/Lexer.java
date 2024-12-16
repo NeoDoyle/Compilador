@@ -36,7 +36,7 @@ public class Lexer {
 
                 if (matcherInvalido.find()) {
                     String tokenNoValido = matcherInvalido.group(); // captura todo el token problematico
-                    String msj = "Token no reconocido: Identificador no válido, comienza con un número: " + tokenNoValido;
+                    String msj = "Token no reconocido: Identificador no válido, comienza por un número: " + tokenNoValido;
                     errores.add(new Errores(tokenNoValido, msj, numLinea, col));
 
                     // avanza la longitud completa del token no valido
