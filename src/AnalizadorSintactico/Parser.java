@@ -234,6 +234,7 @@ public class Parser {
     }
 
     consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'HUNGARO'",hungaroNode);
+    metodoActual="";
 }
     
      private void parseVogel(DefaultMutableTreeNode parentNode) {
@@ -315,6 +316,7 @@ public class Parser {
     System.out.println("A PUNTO DE CERRAR EL METODO");
     printDebugInfo();
     consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'VOGEL'",vogelNode);
+    metodoActual="";
     System.out.println("DESPUÉS DE CERRAR EL METODO");
 }
 
@@ -415,6 +417,7 @@ public class Parser {
         }
 
         consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'ESQNOROESTE'",esqNoroesteNode);
+        metodoActual="";
     }
     
         private void parseCruceArroyo(DefaultMutableTreeNode parentNode) {
@@ -514,6 +517,7 @@ public class Parser {
         }
 
         consume(Tokens.CLOSE_LLAVE, "Se esperaba '}' para cerrar 'CRUCEARROYO'",cruceArroyoNode);
+        metodoActual="";
     }
     
     // Verifica si algún elemento obligatorio falta
@@ -536,7 +540,6 @@ public class Parser {
             if (!resolverPresente) faltantes.append("RESOLVER, ");
             
         }
-        default -> throw new RuntimeException("Método desconocido al verificar elementos faltantes: " + metodo);
     }
 
     if (faltantes.length() > 0) {
