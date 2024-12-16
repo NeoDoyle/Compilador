@@ -185,6 +185,7 @@ public class Parser {
             String value = getCurrentToken().getValor();
             switch (value) {
                 case "RECURSOS" -> {
+                    ultimoElementoProcesado=1;
                     verificarOrden(1, "HUNGARO");
                     parseRecursos(hungaroNode);
                     recursosPresentes = true;
@@ -198,6 +199,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
+                    ultimoElementoProcesado=2;
                     verificarOrden(2, "HUNGARO");
                     parseTareas(hungaroNode);
                     tareasPresentes = true;
@@ -211,6 +213,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
+                    ultimoElementoProcesado=3;
                     verificarOrden(3, "HUNGARO");
                     parseCostos("HUNGARO", hungaroNode);
                     costosPresentes = true;
@@ -224,6 +227,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
+                    ultimoElementoProcesado=4;
                     verificarOrden(4, "HUNGARO");
                     parseObjetivo(hungaroNode);
                     objetivoPresente = true;
@@ -259,7 +263,8 @@ public class Parser {
         if (check(Tokens.PALABRA_CLAVE)) {
             String value = getCurrentToken().getValor();
             switch (value) {
-                case "RECURSOS" -> {              
+                case "RECURSOS" -> {  
+                    ultimoElementoProcesado=1;
                     verificarOrden(1, "VOGEL");
                     parseRecursos(vogelNode);
                     recursosPresentes = true;
@@ -273,6 +278,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
+                    ultimoElementoProcesado=2;
                     verificarOrden(2, "VOGEL");
                     printDebugInfo();
                     parseTareas(vogelNode);
@@ -288,6 +294,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
+                    ultimoElementoProcesado=3;
                     verificarOrden(3, "VOGEL");
                     printDebugInfo();
                     parseCostos("VOGEL",vogelNode);
@@ -303,6 +310,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
+                    ultimoElementoProcesado=4;
                     verificarOrden(4, "VOGEL");
                     parseObjetivo(vogelNode);
                     objetivoPresente = true;
@@ -342,6 +350,7 @@ public class Parser {
                 String value = getCurrentToken().getValor();
                 switch (value) {
                     case "FUENTES" -> {
+                        ultimoElementoProcesado=1;
                         verificarOrden(1, "ESQNOROESTE");
                         parseFuentes(esqNoroesteNode);
                         fuentesPresentes = true;
@@ -355,6 +364,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=2;
                         verificarOrden(2, "ESQNOROESTE");
                         parseDestinos(esqNoroesteNode);
                         destinosPresentes = true;
@@ -368,6 +378,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=3;
                         verificarOrden(3, "ESQNOROESTE");
                         parseOferta(esqNoroesteNode);
                         ofertaPresente = true;
@@ -381,6 +392,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=4;
                         verificarOrden(4, "ESQNOROESTE");
                         parseDemanda(esqNoroesteNode);
                         demandaPresente = true;
@@ -394,6 +406,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=5;
                         verificarOrden(5, "ESQNOROESTE");
                         parseCostos("ESQNOROESTE",esqNoroesteNode);
                         costosPresentes = true;
@@ -407,6 +420,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=6;
                         verificarOrden(6, "ESQNOROESTE");
                         parseResolver(esqNoroesteNode);
                         resolverPresente = true;
@@ -442,6 +456,7 @@ public class Parser {
                 String value = getCurrentToken().getValor();
                 switch (value) {
                     case "FUENTES" -> {
+                        ultimoElementoProcesado=1;
                         verificarOrden(1, "CRUCEARROYO");
                         parseFuentes(cruceArroyoNode);
                         fuentesPresentes = true;
@@ -455,6 +470,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=2;
                         verificarOrden(2, "CRUCEARROYO");
                         parseDestinos(cruceArroyoNode);
                         destinosPresentes = true;
@@ -468,6 +484,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=3;
                         verificarOrden(3, "CRUCEARROYO");
                         parseOferta(cruceArroyoNode);
                         ofertaPresente = true;
@@ -481,6 +498,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=4;
                         verificarOrden(4, "CRUCEARROYO");
                         parseDemanda(cruceArroyoNode);
                         demandaPresente = true;
@@ -494,6 +512,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=5;
                         verificarOrden(5, "CRUCEARROYO");
                         parseCostos("CRUCEARROYO", cruceArroyoNode);
                         costosPresentes = true;
@@ -507,6 +526,7 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                         }
+                        ultimoElementoProcesado=6;
                         verificarOrden(6, "ESQNOROESTE");
                         parseResolver(cruceArroyoNode);
                         resolverPresente = true;
