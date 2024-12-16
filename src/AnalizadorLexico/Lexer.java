@@ -30,7 +30,7 @@ public class Lexer {
             while (!linea.isEmpty()) {
                 boolean bandera = false;
 
-               // validacion previa para patrones no validos nume seguido de letras corrgir  7RECURSOS
+               // validacion previa para patrones no validos numeros seguidos de letras corregir
                 Pattern patronInvalido = Pattern.compile("^\\d+[a-zA-Z_]+");
                 Matcher matcherInvalido = patronInvalido.matcher(linea);
 

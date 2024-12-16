@@ -411,6 +411,7 @@ private void colors() {
         for (Errores error : erroresLexicos) {
             resultado.append(error.toString()).append("\n");
         }
+        resultado.append("\nSe ha detenido el analisis sintáctico.");
     } else {
         resultado.append("\nNo se encontraron errores léxicos.\n");
 
