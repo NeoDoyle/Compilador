@@ -16,18 +16,16 @@ public class Pruebas {
     public static void main(String[] args) {
         // Código de ejemplo para ser analizado
         String codigo = """
-            ASIGNACION { 
-                            7RECURSOS = [Trabajador1, Trabajador2, Trabajador3];
-                            TAREAS = [TareaA, TareaB, TareaC];
-                            COSTOS = [
-                                [4, 8, 6], // Costos para Trabajador1
-                                [5, 12,            7], // Costos para Trabajador2
-                                [9,3, 10.24] // Costos para Trabajador3
-                            ];
-                            MINIMIZAR; // Objetivo del problema
-                            SOLVE; // Indica que el problema se debe resolver
-                        }
-                        
+            HUNGARO { 
+                        RECURSOS = [Trabajador1, Trabajador2, Trabajador3];
+                        TAREAS = [TareaA, TareaB, TareaC];
+                        COSTOS = [
+                            [4, 8,9],
+                            [5, 12, 7],
+                            [9, 3, 10.24]
+                        ];
+                        MINIMIZAR;
+                    }
                         """;
 
         // Crear una instancia del lexer y analizar el código de entrada

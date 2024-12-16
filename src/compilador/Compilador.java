@@ -5,8 +5,8 @@
 package compilador;
 
 /**
- *
- * @author otvam
+ * 
+ * @author otvam 
  */
 public class Compilador {
 

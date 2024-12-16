@@ -31,7 +31,6 @@ public class Errors {
     }
 
     
-
     public int getLine() {
         return line;
     }
@@ -41,7 +40,7 @@ public class Errors {
     }
     @Override
     public String toString() {
-        return "Errores: " + "valor -> " + valor + ", Mensaje:" + mensaje + " (line-> " + line + " column->" + column+')' ;
+        return "Errores: " + "valor -> " + valor + ", Mensaje:" + mensaje + " (linea-> " + line + " columna->" + column+')' ;
     }
    
 }

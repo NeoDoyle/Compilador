@@ -10,8 +10,6 @@ package AnalizadorLexico;
  */
 public enum Tokens {
     // Palabras clave específicas
-    //KEYWORD_IF(""),
-    //KEYWORD_WHILE("while"),
     PALABRA_CLAVE("\\b(HUNGARO|VOGEL|ESQNOROESTE|CRUCEARROYO|RECURSOS|TAREAS|COSTOS|MINIMIZAR|MAXIMIZAR|FUENTES|DESTINOS|OFERTA|DEMANDA|RESOLVER)\\b"),
 
     // Identificadores y valores

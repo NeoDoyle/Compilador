@@ -76,18 +76,18 @@ public class PuebaSintaxis {
         }
         """;
 
-        // Paso 1: Análisis léxico
+        // Analisis laxico
         Lexer lexer = new Lexer();
         List<Errores> erroresLexicos = new ArrayList<>();
         List<Token> tokens = lexer.lex(entrada);
 
-        // Mostrar tokens generados por el analizador léxico
+        // mostrar tokens generados por el analizador laxico
         System.out.println("Tokens generados por el analizador léxico:");
         for (Token token : tokens) {
             System.out.println(token);
         }
 
-        // Mostrar errores léxicos
+        // Mostrar errores lexicos
         if (!erroresLexicos.isEmpty()) {
             System.out.println("\nErrores lexicos encontrados:");
             for (Errores error : erroresLexicos) {
@@ -96,12 +96,12 @@ public class PuebaSintaxis {
             return; // Termina si hay errores léxicos
         }
 
-        // Paso 2: Análisis sintáctico
+        // analisis sintactico
         List<Errores> erroresSintacticos = new ArrayList<>();
         //Parser parser = new Parser(tokens, erroresSintacticos);
         //parser.parse();
 
-        // Mostrar errores sintácticos
+        // mostrar errores sintacticos
         if (!erroresSintacticos.isEmpty()) {
             System.out.println("\nErrores sintacticos encontrados:");
             for (Errores error : erroresSintacticos) {

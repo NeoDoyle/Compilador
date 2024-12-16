@@ -49,7 +49,7 @@ public class Parser {
         this.errores = errores;
         this.currentTokenIndex = 0;
         this.tablaSimbolos = tablaSimbolos;
-        this.parseTreeRoot = new ParseTreeFrame("ROOT"); // Nodo raíz del árbol
+        this.parseTreeRoot = new ParseTreeFrame("ROOT"); // Nodo raiz del árbol
     }
 
     // Metodo principal para iniciar el analisis
@@ -58,7 +58,7 @@ public class Parser {
     while (!isAtEnd()) {
         try {
             if (primerCiclo == true) {
-                parseMetodo(parentNode); // Analiza la primera declaración principal (HUNGARO, VOGEL, etc.)
+                parseMetodo(parentNode); // Analiza la primera declaracion principal 
             } else {
                 System.out.println("Entrando al bloque después de error");
                 printDebugInfo();
@@ -101,7 +101,7 @@ public class Parser {
               if(metodoActual.equals("")){
                   break;
               }else{
-                  sincronizar(); // Intenta continuar después del error
+                  sincronizar(); // Intenta continuar despues del error
               }
               
             }else{
@@ -119,13 +119,15 @@ public class Parser {
         System.out.println("Ya se acabaron los tokens.");
         System.out.println("Puntero final: " + currentTokenIndex);
     }
-    // Verificar que todos los elementos estén presentes al final del análisis
+    //verificar que todos los elementos esten presentes al final del analisis
+    
+    
     
 }
 
     private void analisisFinal(){
         try {
-            if (metodoActual != null) { // Solo verifica si hay un método procesándose
+            if (metodoActual != null) { // Solo verifica si hay un metodo procesandose
                 verificarElementosFaltantes(metodoActual);
             }
         } catch (RuntimeException e) {
@@ -137,7 +139,7 @@ public class Parser {
             ));
         }    
     }
-    // Analiza una declaración principal
+    //analiza una declaración principal
     private void parseMetodo(DefaultMutableTreeNode parentNode) {
     if (check(Tokens.PALABRA_CLAVE) && getCurrentToken().getValor().equals("HUNGARO")) {
         metodoActual = "HUNGARO";
@@ -164,7 +166,7 @@ public class Parser {
     }
 }
 
-    // Analiza una declaración de asignación
+    // alaisisis una declaración de asignacion
     private void parseHungaro(DefaultMutableTreeNode parentNode) {
     DefaultMutableTreeNode hungaroNode = new DefaultMutableTreeNode("Método: HUNGARO");    
     if(primerCiclo == true){
@@ -520,7 +522,7 @@ public class Parser {
         metodoActual="";
     }
     
-    // Verifica si algún elemento obligatorio falta
+    // Verifica si algun elemento obligatorio falta
     private void verificarElementosFaltantes(String metodo) {
     StringBuilder faltantes = new StringBuilder();
 
@@ -543,14 +545,14 @@ public class Parser {
     }
 
     if (faltantes.length() > 0) {
-        // Eliminar la última coma y espacio
+        // Eliminar la ultima coma y espacio
         faltantes.setLength(faltantes.length() - 2);
         throw new RuntimeException("Faltan los siguientes elementos obligatorios en '" + metodo + "': " + faltantes);
     }
 }
 
 
-    // Verifica si los elementos están en el orden correcto
+    // Verifica si los elementos estan en el orden correcto
     private void verificarOrden(int elementoActual, String metodo) {
     if (elementoActual < ultimoElementoProcesado) {
         throw new RuntimeException(
@@ -619,7 +621,7 @@ public class Parser {
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'COSTOS'",parentNode);
         parentNode.add(costosNode);
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'COSTOS'",costosNode);
-        // Lista que contendrá todas las matrices parseadas
+        // Lista que contendra todas las matrices parseadas
         List<List<List<Double>>> matrices = new ArrayList<>();
         int numMatrices = parseListaMatrices(matrices, costosNode);
         StringBuilder listaMatrices = new StringBuilder("");
@@ -715,7 +717,7 @@ private List<Double> parseFilaMatriz(DefaultMutableTreeNode parentNode) {
                            "', Línea=" + currentToken.getLine() + 
                            ", Columna=" + currentToken.getColumn());
         
-        // Verificar si el token actual es un número válido
+        // Verificar si el token actual es un numero valido
         if (check(Tokens.NUMERO) || check(Tokens.DECIMAL)) {
             // Parsear el número (entero o decimal)
             fila.add(Double.parseDouble(currentToken.getValor()));
@@ -785,7 +787,7 @@ private List<List<Double>> parseMatriz(DefaultMutableTreeNode parentNode) {
 }
 
     
-    // Validar que todas las filas tengan el mismo número de columnas
+    // Validar que todas las filas tengan el mismo numero de columnas
     int columnCount = matriz.get(0).size();
     for (List<Double> fila : matriz) {
         if (metodoActual.equals("HUNGARO") || metodoActual.equals("VOGEL")) {
@@ -867,7 +869,7 @@ private void parseDemanda(DefaultMutableTreeNode parentNode) {
     consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'DEMANDA'",demandaNode);
 }
 
-// Analiza una lista de valores numéricos y devuelve el conteo
+// Analiza una lista de valores numericos y devuelve el conteo
 private String parseListaNumerica(String variable, DefaultMutableTreeNode parentNode) {
     DefaultMutableTreeNode listaNode = new DefaultMutableTreeNode("Lista");
     consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de valores numéricos",listaNode);
@@ -901,7 +903,7 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
         return lista.toString();
 }
 
-    // Métodos de ayuda
+    // Metodos de ayuda
     private void inicializarEstado() {
         primerCiclo = true;
         numRecursos = 0;
@@ -962,7 +964,7 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
     }
     
     
-    // Manejo de errores y sincronización
+    // manejar errores y sincronizacion
     private void sincronizar() {
         primerCiclo = false;
         System.out.println("Antes del advance");
@@ -1003,7 +1005,7 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
     }
 
      /**
-     * Método para mostrar el token actual y los tokens restantes para debugging.
+     * Metodo para mostrar el token actual y los tokens restantes para debugging.
      */
     private void printDebugInfo() {
         System.out.println("Estado actual del parser:");
@@ -1032,7 +1034,7 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
     }
 
     public ParseTreeFrame getParseTreeFrame() {
-    return this.parseTreeRoot; // Devuelve la instancia del árbol
+    return this.parseTreeRoot; // Devuelve la instancia del arbol
 }
     
     private static void salirConfirmacion() {
