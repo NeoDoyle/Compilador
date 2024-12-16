@@ -619,12 +619,11 @@ public class Parser {
         // Lista que contendrá todas las matrices parseadas
         List<List<List<Double>>> matrices = new ArrayList<>();
         int numMatrices = parseListaMatrices(matrices, costosNode);
-        StringBuilder listaMatrices = new StringBuilder("[");
+        StringBuilder listaMatrices = new StringBuilder("");
         for (int i = 0; i < matrices.size(); i++) {
             if (i > 0) listaMatrices.append(", ");
             listaMatrices.append(matrices.get(i)); // `toString` de la lista de listas
         }
-        listaMatrices.append("]");
     
         tablaSimbolos.registrarSimbolo("COSTOS", "Matriz de decimales", metodoActual, listaMatrices.toString());
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'COSTOS'",costosNode);
