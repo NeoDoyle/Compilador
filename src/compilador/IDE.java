@@ -10,7 +10,6 @@ import AnalizadorLexico.Errores;
 import AnalizadorSintactico.Parser;
 import compilador.TablaSimbolosFrame;
 
-
 import java.awt.Color;
 import java.util.ArrayList;
 import javax.swing.JTextPane;
@@ -437,6 +436,7 @@ private void colors() {
         Parser parser = new Parser(tokens, erroresSintacticos, tablaSimbolos);
         parser.parse();
 
+        
         if (!erroresSintacticos.isEmpty()) {
             resultado.append("\nErrores sintácticos encontrados:\n");
             for (Errores error : erroresSintacticos) {
