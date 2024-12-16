@@ -4,9 +4,11 @@ import AnalizadorLexico.Token;
 import AnalizadorLexico.Tokens;
 import AnalizadorLexico.Errores;
 import compilador.TablaSimbolosFrame;
+import compilador.ParseTreeFrame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.JOptionPane;
 
@@ -24,7 +26,7 @@ public class Parser {
     private int numOfertas = 0;
     private int numDemandas = 0;
     private int numMatrices = 0;
-    private DefaultMutableTreeNode parseTreeRoot;
+    private ParseTreeFrame parseTreeRoot;
     
     private boolean recursosPresentes = false;
     private boolean tareasPresentes = false;
@@ -47,13 +49,12 @@ public class Parser {
         this.errores = errores;
         this.currentTokenIndex = 0;
         this.tablaSimbolos = tablaSimbolos;
-        this.parseTreeRoot = new DefaultMutableTreeNode("Root"); // Nodo raíz del árbol
+        this.parseTreeRoot = new ParseTreeFrame("ROOT"); // Nodo raíz del árbol
     }
 
     // Metodo principal para iniciar el analisis
     public void parse() {
-    DefaultMutableTreeNode parentNode = new DefaultMutableTreeNode("PADRE");
-    parseTreeRoot.add(parentNode);
+    DefaultMutableTreeNode parentNode = parseTreeRoot.getRootNode();
     while (!isAtEnd()) {
         try {
             if (primerCiclo == true) {
@@ -95,7 +96,9 @@ public class Parser {
                     getCurrentToken().getLine(),
                     getCurrentToken().getColumn()
                 ));
-              if(metodoActual == ""){
+                DefaultMutableTreeNode errorNode = new DefaultMutableTreeNode("Error: " + e.getMessage());
+                parentNode.add(errorNode);
+              if(metodoActual.equals("")){
                   break;
               }else{
                   sincronizar(); // Intenta continuar después del error
@@ -163,12 +166,14 @@ public class Parser {
 
     // Analiza una declaración de asignación
     private void parseHungaro(DefaultMutableTreeNode parentNode) {
+    DefaultMutableTreeNode hungaroNode = new DefaultMutableTreeNode("Método: HUNGARO");    
     if(primerCiclo == true){
        System.out.println("Estamos en el primer ciclo");
        printDebugInfo();
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'HUNGARO'",parentNode);
+        parentNode.add(hungaroNode);
         printDebugInfo();
-        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'HUNGARO'",parentNode);
+        consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'HUNGARO'",hungaroNode);
         printDebugInfo(); 
     }else{
         System.out.println("No estamos en el primer ciclo");
@@ -178,9 +183,8 @@ public class Parser {
             String value = getCurrentToken().getValor();
             switch (value) {
                 case "RECURSOS" -> {
-                    DefaultMutableTreeNode nodoRecursos = new DefaultMutableTreeNode("S2");
                     verificarOrden(1, "HUNGARO");
-                    parseRecursos(nodoRecursos);
+                    parseRecursos(hungaroNode);
                     recursosPresentes = true;
                 }
                 case "TAREAS" -> {
@@ -192,9 +196,8 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
-                    DefaultMutableTreeNode nodoTareas = new DefaultMutableTreeNode("S3");
                     verificarOrden(2, "HUNGARO");
-                    parseTareas(nodoTareas);
+                    parseTareas(hungaroNode);
                     tareasPresentes = true;
                 }
                 case "COSTOS" -> {
@@ -206,9 +209,8 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
-                    DefaultMutableTreeNode nodoRecursos = new DefaultMutableTreeNode("S4");
                     verificarOrden(3, "HUNGARO");
-                    parseCostos("HUNGARO", parentNode);
+                    parseCostos("HUNGARO", hungaroNode);
                     costosPresentes = true;
                 }
                 case "MINIMIZAR", "MAXIMIZAR" -> {
@@ -221,7 +223,7 @@ public class Parser {
                         ));
                     }
                     verificarOrden(4, "HUNGARO");
-                    parseObjetivo(parentNode);
+                    parseObjetivo(hungaroNode);
                     objetivoPresente = true;
                 }
                 default -> throw new RuntimeException("Palabra clave no reconocida dentro de 'HUNGARO': " + value);
@@ -231,14 +233,17 @@ public class Parser {
         }
     }
 
-    consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'HUNGARO'",parentNode);
+    consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'HUNGARO'",hungaroNode);
 }
     
      private void parseVogel(DefaultMutableTreeNode parentNode) {
+    DefaultMutableTreeNode vogelNode = new DefaultMutableTreeNode("Método: VOGEL");     
     if(primerCiclo == true){
        System.out.println("Estamos en el primer ciclo");
        printDebugInfo();
+       
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'VOGEL'",parentNode);
+        parentNode.add(vogelNode);
         printDebugInfo();
         consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'VOGEL'",parentNode);
         printDebugInfo(); 
@@ -251,10 +256,9 @@ public class Parser {
         if (check(Tokens.PALABRA_CLAVE)) {
             String value = getCurrentToken().getValor();
             switch (value) {
-                case "RECURSOS" -> {
-                    DefaultMutableTreeNode nodoRecursos = new DefaultMutableTreeNode("S2");
+                case "RECURSOS" -> {              
                     verificarOrden(1, "VOGEL");
-                    parseRecursos(nodoRecursos);
+                    parseRecursos(vogelNode);
                     recursosPresentes = true;
                 }
                 case "TAREAS" -> {
@@ -266,10 +270,9 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
-                    DefaultMutableTreeNode nodoTareas = new DefaultMutableTreeNode("S3");
                     verificarOrden(2, "VOGEL");
                     printDebugInfo();
-                    parseTareas(nodoTareas);
+                    parseTareas(vogelNode);
                     printDebugInfo();
                     tareasPresentes = true;
                 }
@@ -282,10 +285,9 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
-                    DefaultMutableTreeNode nodoCostos = new DefaultMutableTreeNode("S4");
                     verificarOrden(3, "VOGEL");
                     printDebugInfo();
-                    parseCostos("VOGEL",nodoCostos);
+                    parseCostos("VOGEL",vogelNode);
                     printDebugInfo();
                     costosPresentes = true;
                 }
@@ -298,9 +300,8 @@ public class Parser {
                             getCurrentToken().getColumn()
                         ));
                     }
-                    DefaultMutableTreeNode nodoObjetivo = new DefaultMutableTreeNode("S5");
                     verificarOrden(4, "VOGEL");
-                    parseObjetivo(nodoObjetivo);
+                    parseObjetivo(vogelNode);
                     objetivoPresente = true;
                 }
                 default -> {
@@ -313,17 +314,20 @@ public class Parser {
     }
     System.out.println("A PUNTO DE CERRAR EL METODO");
     printDebugInfo();
-    consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'VOGEL'",parentNode);
+    consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'VOGEL'",vogelNode);
     System.out.println("DESPUÉS DE CERRAR EL METODO");
 }
 
     private void parseEsqNoroeste(DefaultMutableTreeNode parentNode) {
+        DefaultMutableTreeNode esqNoroesteNode = new DefaultMutableTreeNode("Método: ESQNOROESTE");
         if(primerCiclo == true){
             System.out.println("Estamos en el primer ciclo");
             printDebugInfo();
-             consume(Tokens.PALABRA_CLAVE, "Se esperaba 'ESQNOROESTE'",parentNode);
+            
+             consume(Tokens.PALABRA_CLAVE, "Se esperaba 'ESQNOROESTE'",esqNoroesteNode);
+             parentNode.add(esqNoroesteNode);
              printDebugInfo();
-             consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'ESQNOROESTE'",parentNode);
+             consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'ESQNOROESTE'",esqNoroesteNode);
              printDebugInfo(); 
          }else{
              System.out.println("No estamos en el primer ciclo");
@@ -335,7 +339,7 @@ public class Parser {
                 switch (value) {
                     case "FUENTES" -> {
                         verificarOrden(1, "ESQNOROESTE");
-                        parseFuentes(parentNode);
+                        parseFuentes(esqNoroesteNode);
                         fuentesPresentes = true;
                     }
                     case "DESTINOS" -> {
@@ -348,7 +352,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(2, "ESQNOROESTE");
-                        parseDestinos(parentNode);
+                        parseDestinos(esqNoroesteNode);
                         destinosPresentes = true;
                     }
                     case "OFERTA" -> {
@@ -361,7 +365,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(3, "ESQNOROESTE");
-                        parseOferta(parentNode);
+                        parseOferta(esqNoroesteNode);
                         ofertaPresente = true;
                     }
                     case "DEMANDA" -> {
@@ -374,7 +378,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(4, "ESQNOROESTE");
-                        parseDemanda(parentNode);
+                        parseDemanda(esqNoroesteNode);
                         demandaPresente = true;
                     }
                     case "COSTOS" -> {
@@ -387,7 +391,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(5, "ESQNOROESTE");
-                        parseCostos("ESQNOROESTE",parentNode);
+                        parseCostos("ESQNOROESTE",esqNoroesteNode);
                         costosPresentes = true;
                     }
                     case "RESOLVER" -> {
@@ -400,7 +404,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(6, "ESQNOROESTE");
-                        parseResolver(parentNode);
+                        parseResolver(esqNoroesteNode);
                         resolverPresente = true;
                     }
                     default -> throw new RuntimeException("Palabra clave no reconocida dentro de 'ESQNOROESTE': " + value);
@@ -410,14 +414,17 @@ public class Parser {
             }
         }
 
-        consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'ESQNOROESTE'",parentNode);
+        consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'ESQNOROESTE'",esqNoroesteNode);
     }
     
         private void parseCruceArroyo(DefaultMutableTreeNode parentNode) {
+        DefaultMutableTreeNode cruceArroyoNode = new DefaultMutableTreeNode("Método: CRUCEARROYO");    
         if(primerCiclo == true){
             System.out.println("Estamos en el primer ciclo");
             printDebugInfo();
+            
              consume(Tokens.PALABRA_CLAVE, "Se esperaba 'CRUCEARROYO'",parentNode);
+             parentNode.add(cruceArroyoNode);
              printDebugInfo();
              consume(Tokens.OPEN_BRACE, "Se esperaba '{' después de 'CRUCEARROYO'",parentNode);
              printDebugInfo(); 
@@ -431,7 +438,7 @@ public class Parser {
                 switch (value) {
                     case "FUENTES" -> {
                         verificarOrden(1, "CRUCEARROYO");
-                        parseFuentes(parentNode);
+                        parseFuentes(cruceArroyoNode);
                         fuentesPresentes = true;
                     }
                     case "DESTINOS" -> {
@@ -444,7 +451,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(2, "CRUCEARROYO");
-                        parseDestinos(parentNode);
+                        parseDestinos(cruceArroyoNode);
                         destinosPresentes = true;
                     }
                     case "OFERTA" -> {
@@ -457,7 +464,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(3, "CRUCEARROYO");
-                        parseOferta(parentNode);
+                        parseOferta(cruceArroyoNode);
                         ofertaPresente = true;
                     }
                     case "DEMANDA" -> {
@@ -470,7 +477,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(4, "CRUCEARROYO");
-                        parseDemanda(parentNode);
+                        parseDemanda(cruceArroyoNode);
                         demandaPresente = true;
                     }
                     case "COSTOS" -> {
@@ -483,7 +490,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(5, "CRUCEARROYO");
-                        parseCostos("CRUCEARROYO", parentNode);
+                        parseCostos("CRUCEARROYO", cruceArroyoNode);
                         costosPresentes = true;
                     }
                     case "RESOLVER" -> {
@@ -496,7 +503,7 @@ public class Parser {
                         ));
                         }
                         verificarOrden(6, "ESQNOROESTE");
-                        parseResolver(parentNode);
+                        parseResolver(cruceArroyoNode);
                         resolverPresente = true;
                     }
                     default -> throw new RuntimeException("Palabra clave no reconocida dentro de 'CRUCEARROYO': " + value);
@@ -506,7 +513,7 @@ public class Parser {
             }
         }
 
-        consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'CRUCEARROYO'",parentNode);
+        consume(Tokens.CLOSE_BRACE, "Se esperaba '}' para cerrar 'CRUCEARROYO'",cruceArroyoNode);
     }
     
     // Verifica si algún elemento obligatorio falta
@@ -575,13 +582,13 @@ public class Parser {
 
     // Analiza la lista de recursos
     private void parseRecursos(DefaultMutableTreeNode parentNode) {
-        DefaultMutableTreeNode recursosNode = new DefaultMutableTreeNode("RECURSOS");
+        DefaultMutableTreeNode recursosNode = new DefaultMutableTreeNode("Propiedad: RECURSOS");
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'RECURSOS'",parentNode);
         parentNode.add(recursosNode);
         printDebugInfo();
         consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'RECURSOS'",parentNode);
         printDebugInfo();
-        String listaIdentificadores = parseListaIdentificadores("RECURSOS", parentNode);
+        String listaIdentificadores = parseListaIdentificadores("RECURSOS", recursosNode);
         tablaSimbolos.registrarSimbolo("RECURSOS", "Lista de Identificadores", metodoActual, listaIdentificadores);
         consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'RECURSOS'",parentNode);
         printDebugInfo();
@@ -589,29 +596,29 @@ public class Parser {
 
     // Analiza la lista de tareas
     private void parseTareas(DefaultMutableTreeNode parentNode) {
-        DefaultMutableTreeNode tareasNode = new DefaultMutableTreeNode("TAREAS");
+        DefaultMutableTreeNode tareasNode = new DefaultMutableTreeNode("Propiedad: TAREAS");
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'TAREAS'",parentNode);
         parentNode.add(tareasNode);
         printDebugInfo();
-        consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'TAREAS'",parentNode);
+        consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'TAREAS'",tareasNode);
         printDebugInfo();
-        String listaIdentificadores = parseListaIdentificadores("TAREAS",parentNode);
+        String listaIdentificadores = parseListaIdentificadores("TAREAS",tareasNode);
         tablaSimbolos.registrarSimbolo("TAREAS", "Lista de Identificadores", metodoActual, listaIdentificadores);
         System.out.println("A punto de evaluar el semicolon");
         printDebugInfo();
-        consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'TAREAS'",parentNode);
+        consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'TAREAS'",tareasNode);
         printDebugInfo();
     }
 
     // Analiza las matrices de costos
     private void parseCostos(String metodo, DefaultMutableTreeNode parentNode) {
-        DefaultMutableTreeNode costosNode = new DefaultMutableTreeNode("COSTOS");
+        DefaultMutableTreeNode costosNode = new DefaultMutableTreeNode("Propiedad: COSTOS");
         consume(Tokens.PALABRA_CLAVE, "Se esperaba 'COSTOS'",parentNode);
         parentNode.add(costosNode);
-        consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'COSTOS'",parentNode);
+        consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'COSTOS'",costosNode);
         // Lista que contendrá todas las matrices parseadas
         List<List<List<Double>>> matrices = new ArrayList<>();
-        int numMatrices = parseListaMatrices(matrices, parentNode);
+        int numMatrices = parseListaMatrices(matrices, costosNode);
         StringBuilder listaMatrices = new StringBuilder("[");
         for (int i = 0; i < matrices.size(); i++) {
             if (i > 0) listaMatrices.append(", ");
@@ -620,14 +627,16 @@ public class Parser {
         listaMatrices.append("]");
     
         tablaSimbolos.registrarSimbolo("COSTOS", "Matriz de decimales", metodoActual, listaMatrices.toString());
-        consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'COSTOS'",parentNode);
+        consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'COSTOS'",costosNode);
         System.out.println("Numero de matrices"+numMatrices);
         
     }
 
     // Analiza la lista de identificadores y devuelve el conteo
     private String parseListaIdentificadores(String variable, DefaultMutableTreeNode parentNode) {
+        DefaultMutableTreeNode listaNode = new DefaultMutableTreeNode("Lista");
         consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de identificadores",parentNode);
+        parentNode.add(listaNode);
         printDebugInfo();
         int count = 0;
         
@@ -640,14 +649,14 @@ public class Parser {
             printDebugInfo();
             String caracter = getCurrentToken().getValor();
             lista.append(caracter);
-            consume(Tokens.IDENTIFICADOR, "Se esperaba un identificador",parentNode);
+            consume(Tokens.IDENTIFICADOR, "Se esperaba un identificador",listaNode);
             first = false;
             printDebugInfo();
             count++;
         } while (match(Tokens.COMA,parentNode));
         System.out.println("Antes de evaluar el close bracket de tareas");
         printDebugInfo();
-        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de identificadores",parentNode);
+        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de identificadores",listaNode);
         lista.append("]");
         System.out.println("Despues de evaluar el close bracket de tareas");
         printDebugInfo();
@@ -663,21 +672,24 @@ public class Parser {
     // Analiza una lista de matrices y devuelve el conteo de filas
     private int parseListaMatrices(List<List<List<Double>>> matrices, DefaultMutableTreeNode parentNode) {
         printDebugInfo();
+        DefaultMutableTreeNode matrizNode = new DefaultMutableTreeNode("Matriz");
         consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar las matrices",parentNode);
+        parentNode.add(matrizNode);
         int count = 0;
         do {
             printDebugInfo();
-            List<List<Double>> matriz = parseMatriz(parentNode);
+            List<List<Double>> matriz = parseMatriz(matrizNode);
             matrices.add(matriz);
             //parseMatriz(metodoActual);
             count++;
-        } while (match(Tokens.COMA,parentNode));
-        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar las matrices",parentNode);
+        } while (match(Tokens.COMA,matrizNode));
+        consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar las matrices",matrizNode);
         return count;
     }
     
     // Analiza una matriz
 private List<Double> parseFilaMatriz(DefaultMutableTreeNode parentNode) {
+    DefaultMutableTreeNode filaNode = new DefaultMutableTreeNode("Fila");
     System.out.println("Comenzando parseo de fila de matriz");
     printDebugInfo(); // Mostrar información del estado actual
     
@@ -687,6 +699,7 @@ private List<Double> parseFilaMatriz(DefaultMutableTreeNode parentNode) {
             getCurrentToken().getLine() + " columna " + getCurrentToken().getColumn());
     }
     consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar una fila de la matriz",parentNode);
+    parentNode.add(filaNode);
     System.out.println("Token consumido: '[' (corchete de apertura)"); 
     printDebugInfo();
     
@@ -704,6 +717,8 @@ private List<Double> parseFilaMatriz(DefaultMutableTreeNode parentNode) {
         if (check(Tokens.NUMERO) || check(Tokens.DECIMAL)) {
             // Parsear el número (entero o decimal)
             fila.add(Double.parseDouble(currentToken.getValor()));
+            DefaultMutableTreeNode valorNode = new DefaultMutableTreeNode(getCurrentToken().getValor());
+            filaNode.add(valorNode);
             System.out.println("Número parseado: " + fila.get(fila.size() - 1));
             advance(); // Avanzar al siguiente token
             columnCount++;
@@ -712,7 +727,7 @@ private List<Double> parseFilaMatriz(DefaultMutableTreeNode parentNode) {
             throw new RuntimeException("Se esperaba un número dentro de la matriz en la línea " + 
                 currentToken.getLine() + " columna " + currentToken.getColumn());
         }
-    } while (match(Tokens.COMA,parentNode)); // Continuar mientras haya comas entre números
+    } while (match(Tokens.COMA,filaNode)); // Continuar mientras haya comas entre números
     
     // Consumir el corchete de cierre de la fila
     if (!check(Tokens.CLOSE_BRACKET)) {
@@ -789,19 +804,21 @@ private List<List<Double>> parseMatriz(DefaultMutableTreeNode parentNode) {
     // Analiza el objetivo MINIMIZAR o MAXIMIZAR
     private void parseObjetivo(DefaultMutableTreeNode parentNode) {
         printDebugInfo();
-        DefaultMutableTreeNode nodoObjetivo = new DefaultMutableTreeNode("OBJETIVO");
-        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'MINIMIZAR' o 'MAXIMIZAR'",parentNode);
+        DefaultMutableTreeNode objetivoNode = new DefaultMutableTreeNode("Funcion: " + getCurrentToken().getValor());
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'MINIMIZAR' o 'MAXIMIZAR'",objetivoNode);
         printDebugInfo();
-        parentNode.add(nodoObjetivo);
+        parentNode.add(objetivoNode);
         tablaSimbolos.registrarSimbolo(getPreviousToken().getValor(), "Función", metodoActual, "Ejecutar el programa");
-        consume(Tokens.SEMICOLON, "Se esperaba ';' después del objetivo",parentNode);
+        consume(Tokens.SEMICOLON, "Se esperaba ';' después del objetivo",objetivoNode);
     }
     
     // Analiza el objetivo MINIMIZAR o MAXIMIZAR
     private void parseResolver(DefaultMutableTreeNode parentNode) {
-        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'RESOLVER'",parentNode);
+        DefaultMutableTreeNode resolverNode = new DefaultMutableTreeNode("Funcion: RESOLVER");
+        consume(Tokens.PALABRA_CLAVE, "Se esperaba 'RESOLVER'",resolverNode);
+        parentNode.add(resolverNode);
         tablaSimbolos.registrarSimbolo("RESOLVER", "Función", metodoActual, "Ejecutar el programa");
-        consume(Tokens.SEMICOLON, "Se esperaba ';' después de RESOLVER",parentNode);
+        consume(Tokens.SEMICOLON, "Se esperaba ';' después de RESOLVER",resolverNode);
     }
 
 
@@ -809,40 +826,50 @@ private List<List<Double>> parseMatriz(DefaultMutableTreeNode parentNode) {
 
     
 private void parseFuentes(DefaultMutableTreeNode parentNode) {
+    DefaultMutableTreeNode fuentesNode = new DefaultMutableTreeNode("Propiedad: FUENTES");
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'FUENTES'",parentNode);
-    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'FUENTES'",parentNode);
-    String listaIdentificadores = parseListaIdentificadores("FUENTES",parentNode);
+    parentNode.add(fuentesNode);
+    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'FUENTES'",fuentesNode);
+    String listaIdentificadores = parseListaIdentificadores("FUENTES",fuentesNode);
     tablaSimbolos.registrarSimbolo("FUENTES", "Lista de Identificadores", metodoActual, listaIdentificadores);
-    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'FUENTES'",parentNode);
+    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'FUENTES'",fuentesNode);
 }
 
 private void parseDestinos(DefaultMutableTreeNode parentNode) {
+    DefaultMutableTreeNode destinosNode = new DefaultMutableTreeNode("Propiedad: DESTINOS");
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'DESTINOS'",parentNode);
-    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'DESTINOS'",parentNode);
-    String listaIdentificadores = parseListaIdentificadores("DESTINOS",parentNode);
+    parentNode.add(destinosNode);
+    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'DESTINOS'",destinosNode);
+    String listaIdentificadores = parseListaIdentificadores("DESTINOS",destinosNode);
     tablaSimbolos.registrarSimbolo("DESTINOS", "Lista de Identificadores", metodoActual, listaIdentificadores);
-    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'DESTINOS'",parentNode);
+    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'DESTINOS'",destinosNode);
 }
 
 private void parseOferta(DefaultMutableTreeNode parentNode) {
+    DefaultMutableTreeNode ofertaNode = new DefaultMutableTreeNode("Propiedad: OFERTA");
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'OFERTA'",parentNode);
-    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'OFERTA'",parentNode);
-    String listaNumerica = parseListaNumerica("OFERTA",parentNode);
+    parentNode.add(ofertaNode);
+    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'OFERTA'",ofertaNode);
+    String listaNumerica = parseListaNumerica("OFERTA",ofertaNode);
     tablaSimbolos.registrarSimbolo("OFERTA", "Lista Numérica", metodoActual, listaNumerica);
-    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'OFERTA'",parentNode);
+    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'OFERTA'",ofertaNode);
 }
 
 private void parseDemanda(DefaultMutableTreeNode parentNode) {
+    DefaultMutableTreeNode demandaNode = new DefaultMutableTreeNode("Propiedad: DEMANDA");
     consume(Tokens.PALABRA_CLAVE, "Se esperaba 'DEMANDA'",parentNode);
-    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'DEMANDA'",parentNode);
-    String listaNumerica = parseListaNumerica("DEMANDA",parentNode);
+    parentNode.add(demandaNode);
+    consume(Tokens.ASIGNACION, "Se esperaba '=' después de 'DEMANDA'",demandaNode);
+    String listaNumerica = parseListaNumerica("DEMANDA",demandaNode);
     tablaSimbolos.registrarSimbolo("DEMANDA", "Lista Numérica", metodoActual, listaNumerica);
-    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'DEMANDA'",parentNode);
+    consume(Tokens.SEMICOLON, "Se esperaba ';' después de 'DEMANDA'",demandaNode);
 }
 
 // Analiza una lista de valores numéricos y devuelve el conteo
 private String parseListaNumerica(String variable, DefaultMutableTreeNode parentNode) {
-    consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de valores numéricos",parentNode);
+    DefaultMutableTreeNode listaNode = new DefaultMutableTreeNode("Lista");
+    consume(Tokens.OPEN_BRACKET, "Se esperaba '[' para comenzar la lista de valores numéricos",listaNode);
+    parentNode.add(listaNode);
     int count = 0;
     StringBuilder lista = new StringBuilder("[");
     lista.append("[");
@@ -854,14 +881,17 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
         String caracter = getCurrentToken().getValor();
         lista.append(caracter);
         first = false;
-        if (check(Tokens.NUMERO) || check(Tokens.DECIMAL)) {
-            advance(); // Avanza si el token es un número válido (entero o decimal)
+        if (check(Tokens.NUMERO)){
+            consume(Tokens.NUMERO, "Se esperaba un número (entero o decimal)", listaNode);
             count++;
-        } else {
+        } else if (check(Tokens.DECIMAL)){
+            consume(Tokens.DECIMAL, "Se esperaba un número (entero o decimal)", listaNode);
+            count++;
+        } else{
             throw new RuntimeException("Se esperaba un valor numérico (entero o decimal)");
         }
-    } while (match(Tokens.COMA,parentNode)); // Permite múltiples valores separados por comas
-    consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de valores numéricos",parentNode);
+    } while (match(Tokens.COMA,listaNode)); // Permite múltiples valores separados por comas
+    consume(Tokens.CLOSE_BRACKET, "Se esperaba ']' para cerrar la lista de valores numéricos",listaNode);
     lista.append("]");
     switch(variable){
             case "OFERTA" -> numOfertas = count;
@@ -918,9 +948,11 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
 
     private void consume(Tokens expected, String errorMessage, DefaultMutableTreeNode parentNode) {
         if (check(expected)) {
-            DefaultMutableTreeNode terminalNode = new DefaultMutableTreeNode(
-            getCurrentToken().getTipo() + ":" + getCurrentToken().getValor());
-            parentNode.add(terminalNode);
+            if(Set.of(Tokens.IDENTIFICADOR, Tokens.NUMERO, Tokens.DECIMAL).contains(getCurrentToken().getTipo())){
+                DefaultMutableTreeNode terminalNode = new DefaultMutableTreeNode(
+                getCurrentToken().getTipo() + ":" + getCurrentToken().getValor());
+                parentNode.add(terminalNode);
+            }
             advance();
             
         } else {
@@ -997,10 +1029,10 @@ private String parseListaNumerica(String variable, DefaultMutableTreeNode parent
     private Token getPreviousToken() {
         return tokens.get(currentTokenIndex - 1);
     }
-    
-    public DefaultMutableTreeNode getParseTreeRoot() {
-        return parseTreeRoot;
-    }
+
+    public ParseTreeFrame getParseTreeFrame() {
+    return this.parseTreeRoot; // Devuelve la instancia del árbol
+}
     
     private static void salirConfirmacion() {
         int response = JOptionPane.showConfirmDialog(null, "¿Deseas salir del bucle?", "Confirmar salida",

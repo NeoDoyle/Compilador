@@ -8,7 +8,7 @@ import AnalizadorLexico.Lexer;
 import AnalizadorLexico.Token;
 import AnalizadorLexico.Errores;
 import AnalizadorSintactico.Parser;
-import compilador.TablaSimbolosFrame;
+
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -33,6 +33,7 @@ public class IDE extends javax.swing.JFrame {
     Directorio dir;
     TokensTableFrame tokensFrame; // Ventana de la tabla de tokens
     TablaSimbolosFrame tablaSimbolos;
+    ParseTreeFrame parseTreeFrame;
     /**
      * Creates new form IDE
      */
@@ -204,7 +205,7 @@ private void colors() {
         });
 
         btnReservadas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/Icon/icons8-text-color-48.png"))); // NOI18N
-        btnReservadas.setText("Reservadas");
+        btnReservadas.setText("AST");
         btnReservadas.setToolTipText("Palabras reservadas");
         btnReservadas.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnReservadas.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/compilador/iconos/Iconos/pressed/icons8-text-color-48.png"))); // NOI18N
@@ -294,13 +295,13 @@ private void colors() {
                                 .addComponent(btnGuardar)
                                 .addGap(44, 44, 44)
                                 .addComponent(btnAbrir)
-                                .addGap(44, 44, 44)
-                                .addComponent(btnReservadas)
-                                .addGap(55, 55, 55)
+                                .addGap(41, 41, 41)
                                 .addComponent(btnTokens)
-                                .addGap(40, 40, 40)
+                                .addGap(57, 57, 57)
                                 .addComponent(btnIdentifiers)
-                                .addGap(51, 51, 51)
+                                .addGap(43, 43, 43)
+                                .addComponent(btnReservadas)
+                                .addGap(49, 49, 49)
                                 .addComponent(btnCompilar))
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGap(112, 112, 112)
@@ -320,32 +321,30 @@ private void colors() {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(26, 26, 26)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel1)
+                                .addComponent(jLabel3))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel2)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(26, 26, 26)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel3))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnNuevo)
-                            .addComponent(btnGuardar)
-                            .addComponent(btnAbrir)
-                            .addComponent(btnReservadas)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(btnCompilar, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(btnTokens, javax.swing.GroupLayout.Alignment.LEADING))
-                            .addComponent(btnIdentifiers))
-                        .addGap(42, 42, 42)))
+                        .addGap(8, 8, 8)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnNuevo)
+                    .addComponent(btnGuardar)
+                    .addComponent(btnAbrir)
+                    .addComponent(btnCompilar)
+                    .addComponent(btnTokens)
+                    .addComponent(btnIdentifiers)
+                    .addComponent(btnReservadas))
+                .addGap(42, 42, 42)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(72, 72, 72)
@@ -374,7 +373,12 @@ private void colors() {
     }//GEN-LAST:event_btnAbrirActionPerformed
 
     private void btnReservadasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReservadasActionPerformed
-        // TODO add your handling code here:
+            if (parseTreeFrame != null) {
+                parseTreeFrame.showTree(); // Mostrar el árbol si ya está generado
+            } else {
+                JOptionPane.showMessageDialog(this, "Debe compilar el código para generar el árbol de análisis.", 
+                                          "Información", JOptionPane.INFORMATION_MESSAGE);
+            }
     }//GEN-LAST:event_btnReservadasActionPerformed
 
     private void btnIdentifiersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIdentifiersActionPerformed
@@ -435,7 +439,7 @@ private void colors() {
         List<Errores> erroresSintacticos = new ArrayList<>();
         Parser parser = new Parser(tokens, erroresSintacticos, tablaSimbolos);
         parser.parse();
-
+        parseTreeFrame = parser.getParseTreeFrame();
         
         if (!erroresSintacticos.isEmpty()) {
             resultado.append("\nErrores sintácticos encontrados:\n");

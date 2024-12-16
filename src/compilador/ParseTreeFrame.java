@@ -1,3 +1,5 @@
+package compilador;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 
